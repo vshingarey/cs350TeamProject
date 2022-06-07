@@ -2,6 +2,14 @@ package cs350s22.component.ui.parser;
 
 //Identifire is the class we use for defining the ids of each component
 import cs350s22.support.Identifier;
+import cs350s22.test.ActuatorPrototype;
+import cs350s22.component.actuator.*;
+import cs350s22.component.sensor.*;
+import cs350s22.component.sensor.mapper.*;
+import cs350s22.component.sensor.reporter.*;
+import cs350s22.component.sensor.watchdog.*;
+import cs350s22.component.controller.*;
+
 import java.io.IOException;;
 
 public class Parser 
@@ -9,6 +17,12 @@ public class Parser
 	A_ParserHelper parserHelper;
 	String parse;
 	
+	SymbolTable<A_Actuator> symbolTableActuator = parserHelper.getSymbolTableActuator();
+	SymbolTable<A_Sensor> symbolTableSensor = parserHelper.getSymbolTableSensor();
+	SymbolTable<A_Mapper> symbolTableMapper = parserHelper.getSymbolTableMapper();
+	SymbolTable<A_Reporter> symbolTableMessage = parserHelper.getSymbolTableReporter();
+	SymbolTable<A_Watchdog> symbolTableWatchdog = parserHelper.getSymbolTableWatchdog();
+	SymbolTable<A_Controller> symbolTableController = parserHelper.getSymbolTableController();
 	public Parser (A_ParserHelper parserHelper, String parse) 
 	{
 		this.parserHelper = parserHelper;
@@ -72,9 +86,24 @@ public class Parser
 	}
 	
 	//What each one of us will implement
-	private void actuatorBuilder(String[] values) 
+	private void actuatorBuilder(String[] values) throws IOException
 	{
 		System.out.print("actuator");
+		
+		String type = values[2].toUpperCase();
+		Identifier id = Identifier.make("");
+		if(type == "ROTARY" || type == "LINEAR") 
+		{
+			id = Identifier.make(values[3]); 
+		}
+		else 
+		{
+			throw new IOException("Error: command not found: "+ values[2]);
+		}
+		
+		
+		ActuatorPrototype ap = new ActuatorPrototype();		
+		symbolTableActuator.add(id, ap);
 	}
 	private void sensorBuilder(String[] values) 
 	{
