@@ -22,7 +22,10 @@ public class Parser
     String parse;
     SymbolTable<A_Sensor> symbolTableSensor;
     SymbolTable<A_Actuator> symbolTableActuator;
-
+    SymbolTable<A_Mapper> symbolTableMapper;
+    SymbolTable<A_Reporter> symbolTableMessage;
+    SymbolTable<A_Watchdog> symbolTableWatchdog;
+    SymbolTable<A_Controller> symbolTableController;
 
     public Parser (A_ParserHelper parserHelper, String parse)
     {
@@ -111,7 +114,7 @@ public class Parser
             ap = new ActuatorPrototype(actuatorId, typeOfActuator.getGroups(), Double.parseDouble(values[9]),
                     Double.parseDouble(values[11]), Double.parseDouble(values[13]), Double.parseDouble(values[16]),
                     Double.parseDouble(values[23]), Double.parseDouble(values[19]), Double.parseDouble(values[21]),
-                    Double.parseDouble(values[24]),typeOfActuator.getSensors()); //creates the prototype
+                    Double.parseDouble(values[26]),typeOfActuator.getSensors()); //creates the prototype
 
         }else if(values[5].equals("ACCELERATION")){  // if sensors are NOT included in the command
             //System.out.println("We are in acceleration if statement");
