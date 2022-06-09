@@ -84,6 +84,7 @@ public class Parser
         ActuatorPrototype ap;   //prototype actuator
         MySensor sensorObj;     //sensor Object
         List<A_Sensor> sensorList;  //sensor list
+        symbolTableActuator = parserHelper.getSymbolTableActuator();
 
         if(values[2].equals("LINEAR")){
             typeOfActuator = new ActuatorLinear(actuatorId);
@@ -102,10 +103,13 @@ public class Parser
             sensorList = new ArrayList<>();
             sensorList.add(sensorObj);
 
+
             ap = new ActuatorPrototype(actuatorId, typeOfActuator.getGroups(), Double.parseDouble(values[8]),
                     Double.parseDouble(values[10]), Double.parseDouble(values[12]), Double.parseDouble(values[15]),
                     Double.parseDouble(values[22]), Double.parseDouble(values[18]), Double.parseDouble(values[20]),
                     Double.parseDouble(values[25]),sensorList); //creates the prototype
+
+            symbolTableActuator.add(actuatorId,ap);
 
         }else if(values[4].equals("ACCELERATION")){  // if sensors are NOT included in the command
             //System.out.println("We are in acceleration if statement");
@@ -114,12 +118,11 @@ public class Parser
                     Double.parseDouble(values[20]),Double.parseDouble(values[16]), Double.parseDouble(values[18]),
                     Double.parseDouble(values[23]), typeOfActuator.getSensors());
 
+            symbolTableActuator.add(actuatorId,ap);
+
         }else{
             throw new IOException("Something went wrong in " + values[4]);
         }
-
-        symbolTableActuator = parserHelper.getSymbolTableActuator();
-        symbolTableActuator.add(actuatorId,ap);
 
         System.out.println(symbolTableActuator.get(actuatorId));
     }
@@ -135,38 +138,40 @@ public class Parser
 
     private void mapperBuilder(String[] values) throws IOException {
 
-
         System.out.print("mapper");
         Identifier id = Identifier.make(values[2]);
+        values[3] = values[3].toUpperCase();
+        values[4] = values[4].toUpperCase();
+        symbolTableMapper = parserHelper.getSymbolTableMapper();
 
-        if(values[3].toUpperCase() == "EQUATION"){
+        if(values[3].equals("EQUATION")){
 
-            if(values[4].toUpperCase() == "PASSTHROUGH"){
+            if(values[4].equals("PASSTHROUGH")){
                 MapperEquation map = new MapperEquation(new EquationPassthrough());
                 symbolTableMapper.add(id, map);
             }
-            else if(values[4].toUpperCase() == "SCALE"){
+            else if(values[4].equals("SCALE")){
                 double value = Double.parseDouble(values[5]);
                 MapperEquation map = new MapperEquation(new EquationScaled(value));
                 symbolTableMapper.add(id, map);
             }
-            else if(values[4].toUpperCase() == "NORMALIZE"){
+            else if(values[4].equals("NORMALIZE")){
                 double valueMin = Double.parseDouble(values[5]);
                 double valueMax = Double.parseDouble(values[6]);
                 MapperEquation map = new MapperEquation(new EquationNormalized(valueMin, valueMax));
                 symbolTableMapper.add(id, map);
             }
         }
-        else if(values[3].toUpperCase() == "INTERPOLATION"){
+        else if(values[3].equals("INTERPOLATION")){
             MapLoader ml = new MapLoader(new Filespec(values[6]));
 
-            if(values[4].toUpperCase() == "LINEAR"){
+            if(values[4].equals("LINEAR")){
                 InterpolatorLinear il = new InterpolatorLinear(ml.load());
                 MapperInterpolation map = new MapperInterpolation(il);
                 symbolTableMapper.add(id, map);
             }
 
-            else if(values[4].toUpperCase() == "SPLINE"){
+            else if(values[4].equals("SPLINE")){
                 InterpolatorSpline is = new InterpolatorSpline(ml.load());
                 MapperInterpolation map = new MapperInterpolation(is);
                 symbolTableMapper.add(id, map);
