@@ -134,50 +134,48 @@ public class Parser
 
 
     private void mapperBuilder(String[] values) throws IOException {
-        
-        System.out.println("mapper");
 
-        Identifier mapperId = Identifier.make(values[2]); //creates the id for the mapper
-        A_Mapper map = null;
-        
-        values[3] = values[3].toUpperCase(); //changes text EQUATION OR INTERPOLATION to uppercase
-        values[4] = values[4].toUpperCase(); //changes to uppercase
 
-        if(values[3].equals("EQUATION")){
+        System.out.print("mapper");
+        Identifier id = Identifier.make(values[2]);
 
-            if(values[4].equals("PASSTHROUGH")){
-                map = new MapperEquation(new EquationPassthrough());
+        if(values[3].toUpperCase() == "EQUATION"){
+
+            if(values[4].toUpperCase() == "PASSTHROUGH"){
+                MapperEquation map = new MapperEquation(new EquationPassthrough());
+                symbolTableMapper.add(id, map);
             }
-            else if(values[4].equals("SCALE")){
+            else if(values[4].toUpperCase() == "SCALE"){
                 double value = Double.parseDouble(values[5]);
-                map = new MapperEquation(new EquationScaled(value));
+                MapperEquation map = new MapperEquation(new EquationScaled(value));
+                symbolTableMapper.add(id, map);
             }
-            else if(values[4].equals("NORMALIZE")){
+            else if(values[4].toUpperCase() == "NORMALIZE"){
                 double valueMin = Double.parseDouble(values[5]);
                 double valueMax = Double.parseDouble(values[6]);
-                map = new MapperEquation(new EquationNormalized(valueMin, valueMax));
+                MapperEquation map = new MapperEquation(new EquationNormalized(valueMin, valueMax));
+                symbolTableMapper.add(id, map);
             }
         }
-        else if(values[3].equals("INTERPOLATION")){
+        else if(values[3].toUpperCase() == "INTERPOLATION"){
+            MapLoader ml = new MapLoader(new Filespec(values[6]));
 
-            MapLoader ml = new MapLoader(new Filespec(values[6])); //file name
-
-            if(values[4].equals("LINEAR")){
+            if(values[4].toUpperCase() == "LINEAR"){
                 InterpolatorLinear il = new InterpolatorLinear(ml.load());
-                map = new MapperInterpolation(il);
+                MapperInterpolation map = new MapperInterpolation(il);
+                symbolTableMapper.add(id, map);
             }
 
-            else if(values[5].equals("SPLINE")){
+            else if(values[4].toUpperCase() == "SPLINE"){
                 InterpolatorSpline is = new InterpolatorSpline(ml.load());
-                map = new MapperInterpolation(is);
+                MapperInterpolation map = new MapperInterpolation(is);
+                symbolTableMapper.add(id, map);
             }
         }
         else{
             throw new IOException("Error: command not found: "+ values[3]);
         }
-        symbolTableMapper = parserHelper.getSymbolTableMapper();
-        symbolTableMapper.add(mapperId,map);
-        System.out.println(symbolTableMapper.get(mapperId));
+
 
     }
     private void networkBuilder(String[] values)

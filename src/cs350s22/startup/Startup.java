@@ -36,7 +36,7 @@ public class Startup
         //startup.parse("@CREATE MAPPER myMapper EQUATION PASSTHROUGH");
         //startup.parse("@CREATE MAPPER myMapper EQUATION SCALE 10");
         //startup.parse("@CREATE MAPPER myMapper EQUATION NORMALIZE 10 20");
-        //startup.parse("@CREATE MAPPER myMapper INTERPOLATION LINEAR DEFINITION \"mapfile.map\"");
+        startup.parse("CREATE MAPPER myMapper INTERPOLATION SPLINE DEFINITION \"C:/temp/definition.map\"");
 
 
         /*
