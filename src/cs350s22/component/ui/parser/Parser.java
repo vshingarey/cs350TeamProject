@@ -21,7 +21,8 @@ import cs350s22.component.sensor.mapper.function.interpolator.InterpolatorLinear
 import cs350s22.component.sensor.mapper.function.interpolator.InterpolatorSpline;
 import cs350s22.component.sensor.mapper.function.interpolator.InterpolatorLinear.*;
 import cs350s22.support.Filespec.*;
-import java.io.IOException;;
+import java.io.IOException;
+import java.util.List;
 
 public class Parser 
 {
@@ -31,7 +32,7 @@ public class Parser
 	SymbolTable<A_Actuator> symbolTableActuator = parserHelper.getSymbolTableActuator();
 	SymbolTable<A_Sensor> symbolTableSensor = parserHelper.getSymbolTableSensor();
 	SymbolTable<A_Mapper> symbolTableMapper = parserHelper.getSymbolTableMapper();
-	SymbolTable<A_Reporter> symbolTableMessage = parserHelper.getSymbolTableReporter();
+	SymbolTable<A_Reporter> symbolTableReporter = parserHelper.getSymbolTableReporter();
 	SymbolTable<A_Watchdog> symbolTableWatchdog = parserHelper.getSymbolTableWatchdog();
 	SymbolTable<A_Controller> symbolTableController = parserHelper.getSymbolTableController();
 	public Parser (A_ParserHelper parserHelper, String parse) 
@@ -167,9 +168,96 @@ public class Parser
 	{
 		System.out.print("network");
 	}
-	private void reporterBuilder(String[] values) 
+	private void reporterBuilder(String[] values) throws IOException
 	{
+		for( int ix = 0; ix < values.length; ix++){
+			if(values[ix].toUpperCase() == "CHANGE"){
+				values[ix] = values[ix].toUpperCase();
+			}
+			else if(values[ix].toUpperCase() == "IDS"){
+				values[ix] = values[ix].toUpperCase();
+			}
+			else if(values[ix].toUpperCase() == "DELTA"){
+				values[ix] = values[ix].toUpperCase();
+			}
+			else if(values[ix].toUpperCase() == "FREQUENCY"){
+				values[ix] = values[ix].toUpperCase();
+			}
+		}
 		System.out.print("reporter");
+		Identifier id = Identifier.make(values[3]);
+
+		if(values[2] == "CHANGE") {
+			//Create a new ReporterChange object with ids, groups, and value and add it to SymbolTable<A_Reporter>.
+			if(values[5] == "IDS"){
+				String str = "";
+				for(int i = 6; i < values.length; i++) {
+					str += values[i] + " ";
+					
+				}
+				if(str.contains("GROUPS")){
+					String idsRaw = str.split("GROUPS")[0];
+					String groupsRaw = str.split("GROUPS")[1];
+					String groupsRefined = groupsRaw.split("DELTA")[0];
+					int deltaThreshold = Integer.parseInt(groupsRaw.split("DELTA")[1]);
+					String[] ids = idsRaw.split(" ");
+					String[] groups = groupsRefined.split(" ");
+					List<Identifier> idList = Identifier.makeList(ids);
+					List<Identifier> groupList = Identifier.makeList(groups);
+					ReporterChange rc = new ReporterChange(idList, groupList, deltaThreshold);
+					symbolTableReporter.add(id, rc);
+				}
+				else{
+					String idsRaw = str.split("IDS")[1];
+					idsRaw = idsRaw.split("DELTA")[0];
+					String[] ids = idsRaw.split(" ");
+					int deltaThreshold = Integer.parseInt(values[values.length-1]);
+					List<Identifier> idList = Identifier.makeList(ids);
+					ReporterChange rc = new ReporterChange(idList, deltaThreshold);
+					symbolTableReporter.add(id, rc);
+				}
+			}
+			else{
+				throw new IOException("Error: command not found: "+ values[5]);
+			}
+		}
+		else if(values[2].toUpperCase() == "FREQUENCY") {
+			//Create a new ReporterFrequency object with ids, groups, and value and add it to SymbolTable<A_Reporter>.
+			if(values[5] == "IDS"){
+				String str = "";
+				for(int i = 6; i < values.length; i++) {
+					str += values[i] + " ";
+					
+				}
+				if(str.contains("GROUPS")){
+					String idsRaw = str.split("GROUPS")[0];
+					String groupsRaw = str.split("GROUPS")[1];
+					String groupsRefined = groupsRaw.split("FREQUENCY")[0];
+					int reportingFrequency = Integer.parseInt(groupsRaw.split("FREQUENCY")[1]);
+					String[] ids = idsRaw.split(" ");
+					String[] groups = groupsRefined.split(" ");
+					List<Identifier> idList = Identifier.makeList(ids);
+					List<Identifier> groupList = Identifier.makeList(groups);
+					ReporterFrequency rc = new ReporterFrequency(idList, groupList, reportingFrequency);
+					symbolTableReporter.add(id, rc);
+				}
+				else{
+					String idsRaw = str.split("IDS")[1];
+					idsRaw = idsRaw.split("FREQUENCY")[0];
+					String[] ids = idsRaw.split(" ");
+					int reportingFrequency = Integer.parseInt(values[values.length-1]);
+					List<Identifier> idList = Identifier.makeList(ids);
+					ReporterFrequency rc = new ReporterFrequency(idList, reportingFrequency);
+					symbolTableReporter.add(id, rc);
+				}
+			}
+			else{
+				throw new IOException("Error: command not found: "+ values[5]);
+			}
+		}
+		else{
+			throw new IOException("Error: command not found: "+ values[2]);
+		}
 	}
 	private void watchdogBuilder(String[] values) 
 	{
