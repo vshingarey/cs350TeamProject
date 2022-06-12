@@ -35,14 +35,21 @@ public class Startup
 
 
 //Mapper Tests
-        //startup.parse("@CREATE MAPPER myMapper EQUATION PASSTHROUGH");
-        //startup.parse("@CREATE MAPPER myMapper EQUATION SCALE 10");
-        //startup.parse("@CREATE MAPPER myMapper EQUATION NORMALIZE 10 20");
-        //startup.parse("CREATE MAPPER myMapper INTERPOLATION SPLINE DEFINITION \"C:/temp/definition.map\"");
+        //startup.parse("@CREATE MAPPER myMapper1 EQUATION PASSTHROUGH"); //PASS
+        //startup.parse("@CREATE MAPPER myMapper1 EQUATION SCALE 10");    //PASS
+        //startup.parse("@CREATE MAPPER myMapper1 EQUATION NORMALIZE 10 20"); //PASS
+        //startup.parse("CREATE MAPPER myMapper1 INTERPOLATION SPLINE DEFINITION \"C:/temp/definition.map\"");
+
+//Reporter Tests
+
+        //startup.parse("@CREATE REPORTER CHANGE myReporter1 NOTIFY IDS myActuator1 myActuator2 GROUPS myGroup1 FREQUENCY 3");
+        //startup.parse("@CREATE REPORTER FREQUENCY myReporter1 NOTIFY IDS myActuator1 myActuator2 GROUPS myGroup3 FREQUENCY 3");
 
 //Sensor Tests
-
-        //startup.parse("@CREATE SENSOR POSITION mySensor8 GROUP myGroup1 REPORTERS myReporter1 MAPPER myMapper1\n");
+        //startup.parse("@CREATE WATCHDOG ACCELERATION myWatchdog1 MODE INSTANTANEOUS THRESHOLD LOW 1 HIGH 3 GRACE 4");
+        //startup.parse("@CREATE MAPPER myMapper1 EQUATION PASSTHROUGH");
+        //startup.parse("@CREATE SENSOR POSITION mySensor8 GROUPS myGroup1 REPORTERS myReporter1");
+        //startup.parse("@CREATE SENSOR POSITION mySensor8 GROUP myGroup1 WATCHDOGS myWatchdog1");
         //startup.parse("CREATE SENSOR POSITION mySensor16 GROUP myGroup1 REPORTERS myReporter1 WATCHDOGS myWatchdog1\n" +
         //        " myWatchdog2 MAPPER myMapper1\n");
 
@@ -68,9 +75,6 @@ public class Startup
         //startup.parse("@CREATE WATCHDOG HIGH myWatchdog2 MODE INSTANTANEOUS THRESHOLD 3 GRACE 4");
         //startup.parse("@CREATE WATCHDOG HIGH myWatchdog2 MODE AVERAGE 6 THRESHOLD 3 GRACE 4");
         //startup.parse("@CREATE WATCHDOG HIGH myWatchdog2 MODE STANDARD DEVIATION 10 THRESHOLD 3 GRACE 4");
-
-
-
 
 
 //Actuator Tests
