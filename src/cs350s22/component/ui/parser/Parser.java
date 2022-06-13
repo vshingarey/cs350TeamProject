@@ -29,7 +29,9 @@ import cs350s22.test.MySensor;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.sql.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Parser
@@ -42,6 +44,7 @@ public class Parser
     SymbolTable<A_Reporter> symbolTableReporter;
     SymbolTable<A_Watchdog> symbolTableWatchdog;
     SymbolTable<A_Controller> symbolTableController;
+    SymbolTable<Identifier> symbolTableIdentifier;
 
     public Parser (A_ParserHelper parserHelper, String parse)
     {
@@ -146,25 +149,143 @@ public class Parser
     {
         System.out.println("sensor");
 
+        StringBuilder currentStringBuilder = new StringBuilder();
+
+        String groupsString = "";
+        String reportersString = "";
+        String watchdogsString = "";
+        String mapperString = "";
+        boolean isWatchDogThere = false;
+        boolean isReporterThere = false;
+        boolean isReporterSet = false;
+        boolean isMapperThere = false;
+
+        for(int x = 0; x < values.length; x++){
+
+            if(values[x].equals("GROUP") || values[x].equals("GROUPS")){ //x = 4
+                x++; // x = 5
+                currentStringBuilder.append(values[x]);
+                currentStringBuilder.append(" ");
+            }
+            if(x > 5 && (!values[x].equals("REPORTER") && !values[x].equals("REPORTERS") &&
+                    !values[x].equals("WATCHDOG") && !values[x].equals("WATCHDOGS") &&
+                    !values[x].equals("MAPPER"))){
+
+                currentStringBuilder.append(values[x]);
+                currentStringBuilder.append(" ");
+            }
+            if(x > 5 && (values[x].equals("REPORTER") || values[x].equals("REPORTERS"))){ // x = 7
+                isReporterThere = true;
+                if(groupsString.isEmpty()){
+                    groupsString = currentStringBuilder.toString();
+                    currentStringBuilder.setLength(0);
+                }
+            }
+            if(x > 5 && (values[x].equals("WATCHDOG") || values[x].equals("WATCHDOGS"))){
+                isWatchDogThere = true;
+                if(groupsString.isEmpty()){ // if this is empty, that means we set groupString
+                    groupsString = currentStringBuilder.toString();
+                    currentStringBuilder.setLength(0);
+                }else{
+                    reportersString = currentStringBuilder.toString();  //sets reporters here
+                    currentStringBuilder.setLength(0);
+                    isReporterSet = true;
+                }
+            }
+            if(x > 5 && (values[x].equals("MAPPER"))){
+                isMapperThere = true;
+                if(groupsString.isEmpty()){
+                    groupsString = currentStringBuilder.toString();
+                    currentStringBuilder.setLength(0);
+                }else if(reportersString.isEmpty() && isWatchDogThere) {
+                    watchdogsString = currentStringBuilder.toString();
+                    currentStringBuilder.setLength(0);
+                }else if(isReporterSet){
+                    watchdogsString = currentStringBuilder.toString();
+                    currentStringBuilder.setLength(0);
+                }else if(isReporterThere){
+                    reportersString = currentStringBuilder.toString();
+                    currentStringBuilder.setLength(0);
+                }
+                mapperString = values[x+1];
+            }
+        }
+        if(groupsString.isEmpty()){ //deals with if we go into none of those if statements
+            groupsString = currentStringBuilder.toString();
+            currentStringBuilder.setLength(0);
+        }else{
+            if(isReporterThere && isReporterSet && !isMapperThere){
+                watchdogsString = currentStringBuilder.toString();
+                currentStringBuilder.setLength(0);
+            }else if(isReporterThere && !isWatchDogThere && !isMapperThere){
+                reportersString = currentStringBuilder.toString();
+                currentStringBuilder.setLength(0);
+            }else if(isWatchDogThere && !isReporterThere && !isMapperThere){
+                watchdogsString = currentStringBuilder.toString();
+                currentStringBuilder.setLength(0);
+            }
+        }
+        System.out.println("Testing group string:   " + groupsString);
+        System.out.println("Testing reporters string:   " + reportersString);
+        System.out.println("Testing watchdogs string:   " + watchdogsString);
+        System.out.println("Testing mapper string:   " + mapperString);
+
+        // Above deals with the String
+
+        List<Identifier> groupList = new ArrayList<>();     // A list that will contain groups
+        List<A_Reporter> reporterList = new ArrayList<>();  // A list that will contain the reporters
+        List<A_Watchdog> watchdogList = new ArrayList<>();  // A list that will contain the watchdogs
+        A_Mapper mapper = null;                             // A mapper if needed
+        MySensor myNewSensor;
+
         Identifier sensorId = Identifier.make(values[3]); //sensor id to add the sensor to table
-        System.out.println(sensorId);
-        symbolTableSensor = parserHelper.getSymbolTableSensor(); //table to add our sensor object to
-        symbolTableReporter = parserHelper.getSymbolTableReporter(); //table to pull reporter from
-        symbolTableWatchdog = parserHelper.getSymbolTableWatchdog(); //table to pull watchdog from
-        symbolTableMapper = parserHelper.getSymbolTableMapper(); //table to pull mapper from
 
-        List<A_Reporter> reporterList;  // A list that will contain the reporters
-        List<A_Watchdog> watchdogList;  // A list that will contain the watchdogs
-        A_Mapper mapper;                // A mapper if needed
+        if(!groupsString.isEmpty()){
+            String[] groupsStringArr = groupsString.split(" ");
 
-        MySensor ourNewSensor; //our new sensor object
+           for(String temp: groupsStringArr){
+               Identifier tempId = Identifier.make(temp);
+               groupList.add(tempId);
+           }
+        } //creates a list for groups //PASS
 
+        if(!watchdogsString.isEmpty()){
+                String[] watchdogStringArr = watchdogsString.split(" ");
+
+            for(String temp: watchdogStringArr){
+                  Identifier tempId = Identifier.make(temp);
+                  watchdogList.add(symbolTableWatchdog.get(tempId));
+            }
+        } // DONE PASS
+
+        if(!reportersString.isEmpty()){
+            String[] reporterStringArr = reportersString.split("");
+
+            for(String temp : reporterStringArr){
+                Identifier tempId = Identifier.make(temp);
+                reporterList.add(symbolTableReporter.get(tempId));
+            }
+        } //NEED TO TEST REPORTERS HERE
+
+        if(!mapperString.isEmpty()){
+            Identifier tempId = Identifier.make(mapperString);
+            mapper = symbolTableMapper.get(tempId);
+        }   //PASS
+
+        if(!reporterList.isEmpty() && !watchdogList.isEmpty()){
+            myNewSensor = new MySensor(sensorId,groupList,reporterList,watchdogList,mapper);
+            symbolTableSensor.add(sensorId,myNewSensor);
+        }else{
+            myNewSensor = new MySensor(sensorId);
+            symbolTableSensor.add(sensorId,myNewSensor);
+        }
+
+        System.out.println(symbolTableSensor.toString());
     }
-
 
     private void mapperBuilder(String[] values) throws IOException {
 
-        System.out.print("mapper");
+        System.out.println("mapper");
         Identifier id = Identifier.make(values[2]);
         values[3] = values[3].toUpperCase();
         values[4] = values[4].toUpperCase();
@@ -172,23 +293,31 @@ public class Parser
 
         if(values[3].equals("EQUATION")){
 
-            if(values[4].equals("PASSTHROUGH")){
-                MapperEquation map = new MapperEquation(new EquationPassthrough());
-                symbolTableMapper.add(id, map);
-            }
-            else if(values[4].equals("SCALE")){
-                double value = Double.parseDouble(values[5]);
-                MapperEquation map = new MapperEquation(new EquationScaled(value));
-                symbolTableMapper.add(id, map);
-            }
-            else if(values[4].equals("NORMALIZE")){
-                double valueMin = Double.parseDouble(values[5]);
-                double valueMax = Double.parseDouble(values[6]);
-                MapperEquation map = new MapperEquation(new EquationNormalized(valueMin, valueMax));
-                symbolTableMapper.add(id, map);
+            switch (values[4]) {
+                case "PASSTHROUGH": {
+                    MapperEquation map = new MapperEquation(new EquationPassthrough());
+                    symbolTableMapper.add(id, map);
+                    System.out.println(symbolTableMapper.get(id));
+                    break;
+                }
+                case "SCALE": {
+                    double value = Double.parseDouble(values[5]);
+                    MapperEquation map = new MapperEquation(new EquationScaled(value));
+                    symbolTableMapper.add(id, map);
+                    System.out.println(symbolTableMapper.get(id));
+                    break;
+                }
+                case "NORMALIZE": {
+                    double valueMin = Double.parseDouble(values[5]);
+                    double valueMax = Double.parseDouble(values[6]);
+                    MapperEquation map = new MapperEquation(new EquationNormalized(valueMin, valueMax));
+                    symbolTableMapper.add(id, map);
+                    System.out.println(symbolTableMapper.get(id));
+                    break;
+                }
             }
         }
-        else if(values[3].equals("INTERPOLATION")){
+        else if(values[3].equals("INTERPOLATION")){ // Will leave for reference
             MapLoader ml = new MapLoader(new Filespec(values[6]));
 
             if(values[4].equals("LINEAR")){
@@ -214,20 +343,101 @@ public class Parser
         System.out.println("network");
 
 
-
-
-
-
-
-
     }
-    private void reporterBuilder(String[] values)
-    {
+    private void reporterBuilder(String[] values) throws IOException {
+
         System.out.println("reporter");
+        Identifier reporterId = Identifier.make(values[3]);
+        StringBuilder currentSB = new StringBuilder();
+        ReporterChange reporterChangeObj;
+        ReporterFrequency reporterFrequencyObj;
+        symbolTableReporter = parserHelper.getSymbolTableReporter();
+
+        String idString = "";
+        String groupString = "";
+        int deltaFrequencyInt = 1;
+
+        List<Identifier> idList = new ArrayList<>();
+        List<Identifier> groupList = new ArrayList<>();
+
+            if(values[5].equals("IDS")) {
+                for(int i = 6; i < values.length; i++){
+                    if(values[i].equals("DELTA") || values[i].equals("FREQUENCY")){ //means there is no groups provided
+                        idString = currentSB.toString(); 
+                        currentSB.setLength(0);
+                        deltaFrequencyInt = Integer.parseInt(values[i+1]);
+                        i = values.length;
+                    }else if(values[i].equals("GROUP") || values[i].equals("GROUPS")) { //if there is groups
+                        idString = currentSB.toString(); //sets currentSB to idString
+                        currentSB.setLength(0);          //resets the currentSB
+                        for(int j = i + 1; j < values.length; j++){
+                            if(values[j].equals("DELTA") || values[j].equals("FREQUENCY")){
+                                groupString = currentSB.toString();
+                                currentSB.setLength(0);
+                                deltaFrequencyInt = Integer.parseInt(values[j+1]);
+                                j = values.length;
+                                i = values.length;
+                            }else{
+                                currentSB.append(values[j]);
+                                currentSB.append(" "); //ends for loop if we get to GROUP or DELTA
+                            }
+                        }
+                    }else{
+                        currentSB.append(values[i]);
+                        currentSB.append(" "); //ends for loop if we get to GROUP or DELTA
+                    }
+                }
+            }
+            if(values[5].equals("GROUP") || values[5].equals("GROUPS")){ //deal with only groups and no IDS
+                for(int i = 6; i < values.length; i++){
+                    if(values[i].equals("DELTA") || values[i].equals("FREQUENCY")){
+                        groupString = currentSB.toString();
+                        currentSB.setLength(0);
+                        deltaFrequencyInt = Integer.parseInt(values[i+1]);
+                        i = values.length;
+                    }else{
+                        currentSB.append(values[i]);
+                        currentSB.append(" ");
+                    }
+                }
+            }
+        if(!groupString.isEmpty()) {
+            String[] groupStringArr = groupString.split(" ");
+            for (String temp : groupStringArr) {
+                Identifier tempId = Identifier.make(temp);
+                groupList.add(tempId);
+            }
+        } //fills groupList with groups
+        if(!idString.isEmpty()){
+            String[] idStringArr = idString.split(" ");
+            for(String temp: idStringArr){
+                Identifier tempId = Identifier.make(temp);
+                idList.add(tempId);
+            }
+        } //fills idList with ids
+        if(values[2].equals("CHANGE")){
+            if(!idList.isEmpty() && !groupList.isEmpty()) {
+                reporterChangeObj = new ReporterChange(idList, groupList, deltaFrequencyInt);
+                symbolTableReporter.add(reporterId, reporterChangeObj);
+            }else{
+                throw new IOException("idList or groupList in reporter creation was null in reporter method");
+            }
+        }else if(values[2].equals("FREQUENCY")){
+            if(!idList.isEmpty() && !groupList.isEmpty()) {
+                reporterFrequencyObj = new ReporterFrequency(idList, groupList, deltaFrequencyInt);
+                symbolTableReporter.add(reporterId,reporterFrequencyObj);
+            }else{
+                throw new IOException("idList or groupList in reporter creation was null in reporter method");
+            }
+        }else{
+            throw new IOException("Error in Command: " + values[2]);
+        }
+
+
+        System.out.println(symbolTableReporter.toString());
+
+
     }
-
-
-
     private void watchdogBuilder(String[] values) throws IOException {
         System.out.println("watchdog");
         values[2] = values[2].toUpperCase();
@@ -236,62 +446,67 @@ public class Parser
 
         switch (values[2]) {
             case "ACCELERATION":
-                if (values[5].equals("INSTANTANEOUS")) {
-                    WatchdogAcceleration watchdogAccelerationInstant; //creates acceleration object
-                    if (values.length < 12) {
-                        watchdogAccelerationInstant = new WatchdogAcceleration(Double.parseDouble(values[8]),
-                                Double.parseDouble(values[10]), new WatchdogModeInstantaneous()); //If no Grace
-                    } else {
-                        watchdogAccelerationInstant = new WatchdogAcceleration(Double.parseDouble(values[8]),
-                                Double.parseDouble(values[10]), new WatchdogModeInstantaneous(), Integer.parseInt(values[12]));
-                        // If there is Grace
-                    }
-                    symbolTableWatchdog.add(watchdogId, watchdogAccelerationInstant);
-                    System.out.println(symbolTableWatchdog.get(watchdogId));
+                switch (values[5]) {
+                    case "INSTANTANEOUS":
+                        WatchdogAcceleration watchdogAccelerationInstant; //creates acceleration object
 
-                } else if (values[5].equals("AVERAGE")) {
-                    WatchdogAcceleration watchdogAccelerationAverage;
-                    if (values.length == 14) { // IF there is a grace value AND an Average value
-                        watchdogAccelerationAverage = new WatchdogAcceleration(Double.parseDouble(values[9]),
-                                Double.parseDouble(values[11]), new WatchdogModeAverage(Integer.parseInt(values[6])),
-                                Integer.parseInt(values[13]));
+                        if (values.length < 12) {
+                            watchdogAccelerationInstant = new WatchdogAcceleration(Double.parseDouble(values[8]),
+                                    Double.parseDouble(values[10]), new WatchdogModeInstantaneous()); //If no Grace
+                        } else {
+                            watchdogAccelerationInstant = new WatchdogAcceleration(Double.parseDouble(values[8]),
+                                    Double.parseDouble(values[10]), new WatchdogModeInstantaneous(), Integer.parseInt(values[12]));
+                            // If there is Grace
+                        }
+                        symbolTableWatchdog.add(watchdogId, watchdogAccelerationInstant);
+                        System.out.println(symbolTableWatchdog.get(watchdogId));
 
-                    } else if (values.length == 12) { //if there is an average value but no Grace Val
-                        watchdogAccelerationAverage = new WatchdogAcceleration(Double.parseDouble(values[9]),
-                                Double.parseDouble(values[11]), new WatchdogModeAverage(Integer.parseInt(values[6])));
+                        break;
+                    case "AVERAGE":
+                        WatchdogAcceleration watchdogAccelerationAverage;
+                        if (values.length == 14) { // IF there is a grace value AND an Average value
+                            watchdogAccelerationAverage = new WatchdogAcceleration(Double.parseDouble(values[9]),
+                                    Double.parseDouble(values[11]), new WatchdogModeAverage(Integer.parseInt(values[6])),
+                                    Integer.parseInt(values[13]));
 
-                    } else if (values.length == 13) { // if there is a grace value but no average val
-                        watchdogAccelerationAverage = new WatchdogAcceleration(Double.parseDouble(values[8]),
-                                Double.parseDouble(values[10]), new WatchdogModeAverage(), Integer.parseInt(values[12]));
+                        } else if (values.length == 12) { //if there is an average value but no Grace Val
+                            watchdogAccelerationAverage = new WatchdogAcceleration(Double.parseDouble(values[9]),
+                                    Double.parseDouble(values[11]), new WatchdogModeAverage(Integer.parseInt(values[6])));
 
-                    } else { //there is no grace values or no average value
-                        watchdogAccelerationAverage = new WatchdogAcceleration(Double.parseDouble(values[8]),
-                                Double.parseDouble(values[10]), new WatchdogModeAverage());
-                    }
-                    symbolTableWatchdog.add(watchdogId, watchdogAccelerationAverage);
-                    System.out.println(symbolTableWatchdog.get(watchdogId));
+                        } else if (values.length == 13) { // if there is a grace value but no average val
+                            watchdogAccelerationAverage = new WatchdogAcceleration(Double.parseDouble(values[8]),
+                                    Double.parseDouble(values[10]), new WatchdogModeAverage(), Integer.parseInt(values[12]));
 
-                } else if (values[5].equals("STANDARD")) {
-                    WatchdogAcceleration watchdogAccelerationStandardDev;
-                    if (values.length == 15) { //If there is a grace AND there is a standard dev
-                        watchdogAccelerationStandardDev = new WatchdogAcceleration(Double.parseDouble(values[10]),
-                                Double.parseDouble(values[12]), new WatchdogModeStandardDeviation(Integer.parseInt(values[7])),
-                                Integer.parseInt(values[14]));
-                    } else if (values.length == 14) { // if there is a grace and NO standard dev
-                        watchdogAccelerationStandardDev = new WatchdogAcceleration(Double.parseDouble(values[9]),
-                                Double.parseDouble(values[11]), new WatchdogModeStandardDeviation(), Integer.parseInt(values[13]));
-                    } else if (values.length == 13) { //if there is a standard dev but no grace
-                        watchdogAccelerationStandardDev = new WatchdogAcceleration(Double.parseDouble(values[10]),
-                                Double.parseDouble(values[12]), new WatchdogModeStandardDeviation(Integer.parseInt(values[7])));
-                    } else { // there is no grace and there is no standard dev
-                        watchdogAccelerationStandardDev = new WatchdogAcceleration(Double.parseDouble(values[9]),
-                                Double.parseDouble(values[11]), new WatchdogModeStandardDeviation());
-                    }
-                    symbolTableWatchdog.add(watchdogId, watchdogAccelerationStandardDev);
-                    System.out.println(symbolTableWatchdog.get(watchdogId));
+                        } else { //there is no grace values or no average value
+                            watchdogAccelerationAverage = new WatchdogAcceleration(Double.parseDouble(values[8]),
+                                    Double.parseDouble(values[10]), new WatchdogModeAverage());
+                        }
+                        symbolTableWatchdog.add(watchdogId, watchdogAccelerationAverage);
+                        System.out.println(symbolTableWatchdog.get(watchdogId));
 
-                } else {
-                    throw new IOException("Something went wrong in Acceleration Watchdog");
+                        break;
+                    case "STANDARD":
+                        WatchdogAcceleration watchdogAccelerationStandardDev;
+                        if (values.length == 15) { //If there is a grace AND there is a standard dev
+                            watchdogAccelerationStandardDev = new WatchdogAcceleration(Double.parseDouble(values[10]),
+                                    Double.parseDouble(values[12]), new WatchdogModeStandardDeviation(Integer.parseInt(values[7])),
+                                    Integer.parseInt(values[14]));
+                        } else if (values.length == 14) { // if there is a grace and NO standard dev
+                            watchdogAccelerationStandardDev = new WatchdogAcceleration(Double.parseDouble(values[9]),
+                                    Double.parseDouble(values[11]), new WatchdogModeStandardDeviation(), Integer.parseInt(values[13]));
+                        } else if (values.length == 13) { //if there is a standard dev but no grace
+                            watchdogAccelerationStandardDev = new WatchdogAcceleration(Double.parseDouble(values[10]),
+                                    Double.parseDouble(values[12]), new WatchdogModeStandardDeviation(Integer.parseInt(values[7])));
+                        } else { // there is no grace and there is no standard dev
+                            watchdogAccelerationStandardDev = new WatchdogAcceleration(Double.parseDouble(values[9]),
+                                    Double.parseDouble(values[11]), new WatchdogModeStandardDeviation());
+                        }
+                        symbolTableWatchdog.add(watchdogId, watchdogAccelerationStandardDev);
+                        System.out.println(symbolTableWatchdog.get(watchdogId));
+
+                        break;
+                    default:
+                        throw new IOException("Something went wrong in Acceleration Watchdog");
                 }
 
 
