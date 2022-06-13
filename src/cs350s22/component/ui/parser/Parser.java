@@ -1,19 +1,5 @@
 package cs350s22.component.ui.parser;
 
-//Identifier is the class we use for defining the ids of each component
-import cs350s22.component.A_Component;
-import cs350s22.component.sensor.mapper.function.equation.EquationNormalized;
-import cs350s22.component.sensor.mapper.function.equation.EquationPassthrough;
-import cs350s22.component.sensor.mapper.function.equation.EquationScaled;
-import cs350s22.component.sensor.mapper.function.interpolator.InterpolatorLinear;
-import cs350s22.component.sensor.mapper.function.interpolator.InterpolatorSpline;
-import cs350s22.component.sensor.mapper.function.interpolator.loader.MapLoader;
-import cs350s22.component.sensor.watchdog.mode.A_WatchdogMode;
-import cs350s22.component.sensor.watchdog.mode.WatchdogModeAverage;
-import cs350s22.component.sensor.watchdog.mode.WatchdogModeInstantaneous;
-import cs350s22.component.sensor.watchdog.mode.WatchdogModeStandardDeviation;
-import cs350s22.component.ui.A_Interface;
-import cs350s22.support.Filespec;
 import cs350s22.support.Identifier;
 import cs350s22.test.ActuatorPrototype;
 import cs350s22.component.actuator.*;
@@ -24,8 +10,6 @@ import cs350s22.component.sensor.watchdog.*;
 import cs350s22.component.controller.*;
 import cs350s22.component.logger.*;
 import cs350s22.test.MySensor;
-
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -794,3 +778,4 @@ public class Parser
     }
 
 }
+
