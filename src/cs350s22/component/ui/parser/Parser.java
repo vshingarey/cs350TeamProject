@@ -13,6 +13,7 @@ import cs350s22.component.sensor.watchdog.mode.WatchdogModeAverage;
 import cs350s22.component.sensor.watchdog.mode.WatchdogModeInstantaneous;
 import cs350s22.component.sensor.watchdog.mode.WatchdogModeStandardDeviation;
 import cs350s22.component.ui.A_Interface;
+import cs350s22.network.Network;
 import cs350s22.support.Filespec;
 import cs350s22.support.Identifier;
 import cs350s22.test.ActuatorPrototype;
@@ -25,12 +26,8 @@ import cs350s22.component.controller.*;
 import cs350s22.test.MySensor;
 
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
-import java.sql.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Parser
@@ -43,7 +40,7 @@ public class Parser
     SymbolTable<A_Reporter> symbolTableReporter;
     SymbolTable<A_Watchdog> symbolTableWatchdog;
     SymbolTable<A_Controller> symbolTableController;
-    SymbolTable<Identifier> symbolTableIdentifier;
+    SymbolTable<A_ControllerNonforwarding> symbolTableNetwork;
 
     public Parser (A_ParserHelper parserHelper, String parse)
     {
@@ -60,80 +57,125 @@ public class Parser
 
             values[0] = values[0].toUpperCase();    //converts values[1] string to uppercase
 
-            if (values[0].equals("@CREATE")) { //If second string is CREATE
+            if (values[0].equals("@CREATE") || values[0].equals("@BUILD")) { //If second string is CREATE
 
                 values[1] = values[1].toUpperCase(); // Change values[1] to upper case
 
-                if (values[1].equals("ACTUATOR")) {
-                    actuatorBuilder(values);
-                } else if (values[1].equals("SENSOR")) {
-                    sensorBuilder(values);
-                } else if (values[1].equals("MAPPER")) {
-                    mapperBuilder(values);
-                } else if (values[1].equals("NETWORK")) {
-                    networkBuilder(values);
-                } else if (values[1].equals("REPORTER")) {
-                    reporterBuilder(values);
-                } else if (values[1].equals("WATCHDOG")) {
-                    watchdogBuilder(values);
-                } else {
-                    throw new IOException("Error: command not found: " + values[1]);
+                switch (values[1]) {
+                    case "ACTUATOR":
+                        actuatorBuilder(values);
+                        break;
+                    case "SENSOR":
+                        sensorBuilder(values);
+                        break;
+                    case "MAPPER":
+                        mapperBuilder(values);
+                        break;
+                    case "NETWORK":
+                        networkBuilder(values);
+                        break;
+                    case "REPORTER":
+                        reporterBuilder(values);
+                        break;
+                    case "WATCHDOG":
+                        watchdogBuilder(values);
+                        break;
+                    default:
+                        throw new IOException("Error: command not found: " + values[1]);
                 }
             }
         } // if statement returns nothing if values.length == 1 or less
 
     } // ends parse method
 
-    private void actuatorBuilder(String[] values) throws IOException{
+    private void actuatorBuilder(String[] values){
         System.out.println("actuator");
         values[2] = values[2].toUpperCase(); // changes type of actuator to uppercase
 
         Identifier actuatorId = Identifier.make(values[3]); //identifier for the actuator
-        A_Actuator typeOfActuator; //Actuator type
         ActuatorPrototype ap;   //prototype actuator
-        MySensor sensorObj;     //sensor Object
-        List<A_Sensor> sensorList;  //sensor list
         symbolTableActuator = parserHelper.getSymbolTableActuator();
+        symbolTableSensor = parserHelper.getSymbolTableSensor();
+        StringBuilder currentSb = new StringBuilder();
 
-        if(values[2].equals("LINEAR")){
-            typeOfActuator = new ActuatorLinear(actuatorId);
-        }else if(values[2].equals("ROTARY")){
-            typeOfActuator = new ActuatorRotary(actuatorId);
-        }else{
-            throw new IOException("Unspecified actuator type");
-        }   //if loop to set what type of actuator, linear or rotary
+        String groupString = "";
+        String sensorString = "";
+        List<Identifier> groupList = new ArrayList<>();
+        List<A_Sensor> sensorList = new ArrayList<>();
+        double leadInVal = 0.0;
+        double leadOutVal = 0.0;
+        double relaxVal = 0.0;
+        double velocityLimitVal = 0.0;
+        double minVal = 0.0;
+        double maxVal = 0.0;
+        double initialVal = 0.0;
+        double jerkLimitVal = 0.0;
 
-        if(values[4].equals("SENSORS")){     // If sensors are included in the command
+        for(int i = 0; i < values.length; i++) {
+            switch (values[i]) {
+                case "GROUPS":
+                case "GROUP":
 
-            Identifier sensorId = Identifier.make(values[5]);   // makes identifier for sensor
-            sensorObj = new MySensor(sensorId);                 // creates a new sensor Object
-            symbolTableSensor = parserHelper.getSymbolTableSensor();
-            symbolTableSensor.add(actuatorId, sensorObj); //adds sensor to the table
-            sensorList = new ArrayList<>();
-            sensorList.add(sensorObj);
+                    for (int j = i + 1; j < values.length; j++) {
+                        if (values[j].equals("SENSOR") || values[j].equals("SENSORS") || values[j].equals("ACCELERATION")) {
+                            groupString = currentSb.toString();
+                            currentSb.setLength(0);
+                            j = values.length;
+                        } else {
+                            currentSb.append(values[j]);
+                            currentSb.append(" ");
+                        }
+                    }// end of for loop in j
+                    break;
+                case "SENSOR":
+                case "SENSORS":
+                    for (int j = i + 1; j < values.length; j++) {
+                        if (values[j].equals("ACCELERATION")) {
+                            sensorString = currentSb.toString();
+                            currentSb.setLength(0);
+                            j = values.length;
+                        } else {
+                            currentSb.append(values[j]);
+                            currentSb.append(" ");
+                        }
+                    }
+                    break;
+                case "ACCELERATION":
+                    leadInVal = Double.parseDouble(values[i + 2]);
+                    leadOutVal = Double.parseDouble(values[i + 4]);
+                    relaxVal = Double.parseDouble(values[i + 6]);
+                    velocityLimitVal = Double.parseDouble(values[i + 9]);
+                    minVal = Double.parseDouble(values[i + 12]);
+                    maxVal = Double.parseDouble(values[i + 14]);
+                    initialVal = Double.parseDouble(values[i + 16]);
+                    jerkLimitVal = Double.parseDouble(values[i + 19]);
+                    i = values.length;
+                    break;
+            }
+        } //Deals with the string entirely
+        if(!groupString.isEmpty()){
+            String[] groupStringArr = groupString.split(" ");
 
-
-            ap = new ActuatorPrototype(actuatorId, typeOfActuator.getGroups(), Double.parseDouble(values[8]),
-                    Double.parseDouble(values[10]), Double.parseDouble(values[12]), Double.parseDouble(values[15]),
-                    Double.parseDouble(values[22]), Double.parseDouble(values[18]), Double.parseDouble(values[20]),
-                    Double.parseDouble(values[25]),sensorList); //creates the prototype
-
-            symbolTableActuator.add(actuatorId,ap);
-
-        }else if(values[4].equals("ACCELERATION")){  // if sensors are NOT included in the command
-            //System.out.println("We are in acceleration if statement");
-            ap = new ActuatorPrototype(actuatorId, typeOfActuator.getGroups(), Double.parseDouble(values[6]),
-                    Double.parseDouble(values[8]), Double.parseDouble(values[10]),Double.parseDouble(values[13]),
-                    Double.parseDouble(values[20]),Double.parseDouble(values[16]), Double.parseDouble(values[18]),
-                    Double.parseDouble(values[23]), typeOfActuator.getSensors());
-
-            symbolTableActuator.add(actuatorId,ap);
-
-        }else{
-            throw new IOException("Something went wrong in " + values[4]);
+            for(String temp: groupStringArr){
+                Identifier tempId = Identifier.make(temp);
+                groupList.add(tempId);
+            }
         }
+        if(!sensorString.isEmpty()){
+            String[] sensorStringArr = sensorString.split(" ");
 
-        System.out.println(symbolTableActuator.get(actuatorId));
+            for(String temp: sensorStringArr){
+                Identifier tempId = Identifier.make(temp);
+                if(symbolTableSensor.contains(tempId)) {
+                    sensorList.add(symbolTableSensor.get(tempId)); // sensor has to be created
+                }
+            }
+        }
+        ap = new ActuatorPrototype(actuatorId,groupList,leadInVal,leadOutVal,relaxVal,velocityLimitVal,initialVal,minVal,
+                maxVal,jerkLimitVal,sensorList);
+        symbolTableActuator.add(actuatorId,ap);
+
+       // System.out.println(symbolTableActuator.get(actuatorId));
     }
     private void sensorBuilder(String[] values)
     {
@@ -226,53 +268,56 @@ public class Parser
         List<A_Reporter> reporterList = new ArrayList<>();  // A list that will contain the reporters
         List<A_Watchdog> watchdogList = new ArrayList<>();  // A list that will contain the watchdogs
         A_Mapper mapper = null;                             // A mapper if needed
-        MySensor myNewSensor;
 
+        MySensor myNewSensor;
+        symbolTableWatchdog = parserHelper.getSymbolTableWatchdog();
+        symbolTableReporter = parserHelper.getSymbolTableReporter();
+        symbolTableSensor = parserHelper.getSymbolTableSensor();
+        symbolTableMapper = parserHelper.getSymbolTableMapper();
         Identifier sensorId = Identifier.make(values[3]); //sensor id to add the sensor to table
 
         if(!groupsString.isEmpty()){
             String[] groupsStringArr = groupsString.split(" ");
-
-           for(String temp: groupsStringArr){
-               Identifier tempId = Identifier.make(temp);
-               groupList.add(tempId);
-           }
-        } //creates a list for groups //PASS
-
+            for(String temp: groupsStringArr){
+                Identifier tempId = Identifier.make(temp);
+                groupList.add(tempId);
+            }
+        }
         if(!watchdogsString.isEmpty()){
-                String[] watchdogStringArr = watchdogsString.split(" ");
+            String[] watchdogStringArr = watchdogsString.split(" ");
 
             for(String temp: watchdogStringArr){
-                  Identifier tempId = Identifier.make(temp);
-                  watchdogList.add(symbolTableWatchdog.get(tempId));
+                Identifier tempId = Identifier.make(temp);
+                if(symbolTableWatchdog.contains(tempId)) {
+                    watchdogList.add(symbolTableWatchdog.get(tempId));
+                }
             }
         } // DONE PASS
 
         if(!reportersString.isEmpty()){
-            String[] reporterStringArr = reportersString.split("");
-
+            String[] reporterStringArr = reportersString.split(" ");
             for(String temp : reporterStringArr){
                 Identifier tempId = Identifier.make(temp);
-                reporterList.add(symbolTableReporter.get(tempId));
+                if(symbolTableReporter.contains(tempId)) {
+                    reporterList.add(symbolTableReporter.get(tempId));
+                }
             }
-        } //NEED TO TEST REPORTERS HERE
-
+        }
         if(!mapperString.isEmpty()){
             Identifier tempId = Identifier.make(mapperString);
-            mapper = symbolTableMapper.get(tempId);
-        }   //PASS
-
-        if(!reporterList.isEmpty() && !watchdogList.isEmpty()){
+            if(symbolTableMapper.contains(tempId)) {
+                mapper = symbolTableMapper.get(tempId);
+            }
+        }
+        if(!reporterList.isEmpty() && !watchdogList.isEmpty() && mapper != null){
             myNewSensor = new MySensor(sensorId,groupList,reporterList,watchdogList,mapper);
             symbolTableSensor.add(sensorId,myNewSensor);
         }else{
             myNewSensor = new MySensor(sensorId);
             symbolTableSensor.add(sensorId,myNewSensor);
         }
-
         System.out.println(symbolTableSensor.toString());
     }
-
     private void mapperBuilder(String[] values) throws IOException {
 
         System.out.println("mapper");
@@ -331,6 +376,32 @@ public class Parser
     private void networkBuilder(String[] values)
     {
         System.out.println("network");
+        symbolTableSensor = parserHelper.getSymbolTableSensor();
+        symbolTableController = parserHelper.getSymbolTableController();
+        symbolTableActuator = parserHelper.getSymbolTableActuator();
+        A_Controller myController = parserHelper.getControllerMaster(); // master controller to add to
+
+
+        if(values[3].equals("COMPONENT") || values[3].equals("COMPONENTS")) {
+            for (int i = 4; i < values.length; i++) {
+                Identifier tempId = Identifier.make(values[i]);
+                A_Component tempComponent;
+
+                // Controller already exists so we dont have to check for controller parameter
+                if(symbolTableActuator.contains(tempId)){
+                    System.out.println("checkmark actuator");
+                    tempComponent = symbolTableActuator.get(tempId);
+                    myController.addComponent(tempComponent);
+                }else if(symbolTableSensor.contains(tempId)){
+                    System.out.println("checkmark sensor");
+                    tempComponent = symbolTableSensor.get(tempId);
+                    myController.addComponent(tempComponent);
+                }
+            }
+        }
+
+        System.out.println("TESSTT");
+        System.out.println(parserHelper.getNetwork());
 
 
     }
@@ -423,9 +494,7 @@ public class Parser
             throw new IOException("Error in Command: " + values[2]);
         }
 
-
         System.out.println(symbolTableReporter.toString());
-
 
     }
     private void watchdogBuilder(String[] values) throws IOException {

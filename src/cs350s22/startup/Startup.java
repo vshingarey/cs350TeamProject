@@ -34,6 +34,15 @@ public class Startup
         startup.parse("@CONFIGURE LOG \"a.txt\" DOT SEQUENCE \"b.txt\" NETWORK \"c.txt\" XML \"d.txt\"");
 
 
+//Network Tests
+        startup.parse("@CREATE SENSOR POSITION mySensor1 GROUPS myGroup1 REPORTERS myReporter1 WATCHDOGS myWatchdog1 MAPPER myMapper1");
+        startup.parse("@CREATE ACTUATOR LINEAR myActuator1 GROUPS myGroup1 myGroup2 SENSOR mySensor1 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 10 INITIAL 2 JERK LIMIT 3");
+        startup.parse("@BUILD NETWORK WITH COMPONENT myControllerMaster myActuator1 mySensor1");
+        //startup.parse("@BUILD NETWORK WITH COMPONENTS myController myActuator");
+
+
+
+
 //Mapper Tests
         //startup.parse("@CREATE MAPPER myMapper1 EQUATION PASSTHROUGH"); //PASS
         //startup.parse("@CREATE MAPPER myMapper1 EQUATION SCALE 10");    //PASS
@@ -42,16 +51,19 @@ public class Startup
 
 //Reporter Tests
 
-        //startup.parse("@CREATE REPORTER CHANGE myReporter1 NOTIFY IDS myActuator1 myActuator2 GROUPS myGroup1 FREQUENCY 3");
+        //startup.parse("@CREATE REPORTER CHANGE myReporter1 NOTIFY IDS myActuator1 GROUPS myGroup1 FREQUENCY 3");
         //startup.parse("@CREATE REPORTER FREQUENCY myReporter1 NOTIFY IDS myActuator1 myActuator2 GROUPS myGroup3 FREQUENCY 3");
 
 //Sensor Tests
+        //startup.parse("@CREATE MAPPER myMapper1 EQUATION PASSTHROUGH");
         //startup.parse("@CREATE WATCHDOG ACCELERATION myWatchdog1 MODE INSTANTANEOUS THRESHOLD LOW 1 HIGH 3 GRACE 4");
+        //startup.parse("@CREATE REPORTER CHANGE myReporter1 NOTIFY IDS myActuator1 GROUPS myGroup1 FREQUENCY 3");
+        //startup.parse("@CREATE SENSOR POSITION mySensor1 GROUPS myGroup1 REPORTERS myReporter1 WATCHDOGS myWatchdog1 MAPPER myMapper1");
+
         //startup.parse("@CREATE MAPPER myMapper1 EQUATION PASSTHROUGH");
         //startup.parse("@CREATE SENSOR POSITION mySensor8 GROUPS myGroup1 REPORTERS myReporter1");
-        //startup.parse("@CREATE SENSOR POSITION mySensor8 GROUP myGroup1 WATCHDOGS myWatchdog1");
-        //startup.parse("CREATE SENSOR POSITION mySensor16 GROUP myGroup1 REPORTERS myReporter1 WATCHDOGS myWatchdog1\n" +
-        //        " myWatchdog2 MAPPER myMapper1\n");
+        //startup.parse("@CREATE SENSOR POSITION mySensor1 GROUPS myGroup1 MAPPER myMapper1");
+        //startup.parse("@CREATE SENSOR POSITION mySensor1 GROUPS myGroup1 REPORTERS myReporter1 WATCHDOGS myWatchdog1 MAPPER myMapper1");
 
 //WatchDog Tests
 
@@ -62,7 +74,6 @@ public class Startup
         //startup.parse("@CREATE WATCHDOG BAND myWatchdog1 MODE INSTANTANEOUS THRESHOLD LOW 1 HIGH 3 GRACE 4"); //PASS
         //startup.parse("@CREATE WATCHDOG BAND myWatchdog1 MODE AVERAGE 6 THRESHOLD LOW 1 HIGH 3 GRACE 4");     //PASS
         //startup.parse("@CREATE WATCHDOG BAND myWatchdog1 MODE STANDARD DEVIATION 10 THRESHOLD LOW 1 HIGH 3 GRACE 4");
-
 
         //startup.parse("@CREATE WATCHDOG NOTCH myWatchdog2 MODE INSTANTANEOUS THRESHOLD LOW 1 HIGH 3 GRACE 4");
         //startup.parse("@CREATE WATCHDOG NOTCH myWatchdog2 MODE AVERAGE 6 THRESHOLD LOW 1 HIGH 3 GRACE 4");
@@ -78,11 +89,9 @@ public class Startup
 
 
 //Actuator Tests
-        // startup.parse("@CREATE ACTUATOR LINEAR myActuator0 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 " +
-        //           "VELOCITY LIMIT 5 VALUE MIN 1 MAX 10 INITIAL 2 JERK LIMIT 3");
 
-        //    startup.parse("@CREATE ACTUATOR ROTARY myActuator8 SENSORS mySensor3 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3\n" +
-        //            " VELOCITY LIMIT 5 VALUE MIN 1 MAX 10 INITIAL 2 JERK LIMIT 3");
+         //startup.parse("@CREATE ACTUATOR LINEAR myActuator0 GROUPS myGroup1 myGroup2 SENSOR mySensor1 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 10 INITIAL 2 JERK LIMIT 3");
+
 
         startup.parse("@exit");
     }
