@@ -92,6 +92,7 @@ public class Parser
         System.out.println("actuator");
         values[2] = values[2].toUpperCase(); // changes type of actuator to uppercase
 
+
         Identifier actuatorId = Identifier.make(values[3]); //identifier for the actuator
         ActuatorPrototype ap;   //prototype actuator
         symbolTableActuator = parserHelper.getSymbolTableActuator();
