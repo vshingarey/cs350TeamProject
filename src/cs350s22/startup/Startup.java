@@ -12,6 +12,7 @@ import cs350s22.support.Identifier;
 import cs350s22.test.ActuatorPrototype;
 import cs350s22.test.MyActuator;
 
+import javax.sound.midi.spi.SoundbankReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,9 @@ public class Startup
         Startup startup = new Startup();
         // this command must come first. The filenames do not matter here
         startup.parse("@CONFIGURE LOG \"a.txt\" DOT SEQUENCE \"b.txt\" NETWORK \"c.txt\" XML \"d.txt\"");
+        startup.parse("@CLOCK PAUSE");
+
+
 
 
 //Network Tests
@@ -93,7 +97,7 @@ public class Startup
          //startup.parse("@CREATE ACTUATOR LINEAR myActuator0 GROUPS myGroup1 myGroup2 SENSOR mySensor1 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 10 INITIAL 2 JERK LIMIT 3");
 
 
-        startup.parse("@exit");
+        startup.parse("@EXIT");
     }
 
     // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------

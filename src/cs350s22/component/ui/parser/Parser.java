@@ -2,6 +2,8 @@ package cs350s22.component.ui.parser;
 
 
 import cs350s22.component.A_Component;
+import cs350s22.component.logger.LoggerMessage;
+import cs350s22.component.logger.LoggerMessageSequencing;
 import cs350s22.component.sensor.mapper.function.equation.EquationNormalized;
 import cs350s22.component.sensor.mapper.function.equation.EquationPassthrough;
 import cs350s22.component.sensor.mapper.function.equation.EquationScaled;
@@ -14,6 +16,7 @@ import cs350s22.component.sensor.watchdog.mode.WatchdogModeInstantaneous;
 import cs350s22.component.sensor.watchdog.mode.WatchdogModeStandardDeviation;
 import cs350s22.component.ui.A_Interface;
 import cs350s22.network.Network;
+import cs350s22.support.Clock;
 import cs350s22.support.Filespec;
 import cs350s22.support.Identifier;
 import cs350s22.test.ActuatorPrototype;
@@ -26,6 +29,8 @@ import cs350s22.component.controller.*;
 import cs350s22.test.MySensor;
 
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,9 +53,10 @@ public class Parser
 
     }
 
-    public void parse () throws IOException {
+    public void parse () throws IOException, ParseException {
 
         String[] values = parse.split(" "); //splits the string into single strings and stores in values
+
 
         if(values.length > 1) {     //deals with startup.parse("@exit") in main
 
@@ -82,8 +88,23 @@ public class Parser
                     default:
                         throw new IOException("Error: command not found: " + values[1]);
                 }
+            }else if(values[0].equals("@CONFIGURE")){
+                configure(values);
+            }else if(values[0].equals("@CLOCK")){
+                clock(values);
+            }else if(values[0].equals("@RUN")){
+                run(values);
             }
-        } // if statement returns nothing if values.length == 1 or less
+        }
+        if(values[0].equals("@CLOCK") && values.length == 1){
+            Clock myClock = Clock.getInstance();
+            System.out.println("Current clock: " + myClock.getTime());
+        }
+        if(values[0].equals("@EXIT")){
+
+            parserHelper.exit();
+        }
+
 
     } // ends parse method
 
@@ -829,4 +850,57 @@ public class Parser
 
     }
 
+    public void configure(String[] values){
+        try {
+            Filespec fs1 = new Filespec(values[2]);
+            LoggerMessage.initialize(fs1);
+
+            Filespec fs2 = new Filespec((values[5]));
+            Filespec fs3 = new Filespec(values[7]);
+            LoggerMessageSequencing.initialize(fs2, fs3);
+        }catch (IOException e){
+            System.out.println("Something went wrong in Configure");
+        }
+    }
+
+    public void clock(String[] values){
+        Clock myClock = Clock.getInstance();
+
+        if(values[1].equals("PAUSE")){
+            myClock.isActive(false);
+        }else if(values[1].equals("RESUME")){
+            myClock.isActive(true);
+        } //Option1
+        if(values[1].equals("ONESTEP")){
+            if(!myClock.isActive()){ //If not active
+                if(values.length == 3){ // means there is count included
+                    myClock.onestep(Integer.parseInt(values[2]));
+                }else{
+                    myClock.onestep();
+                }
+            }
+        } //Option2
+
+        if(values[1].equals("SET")){
+            myClock.setRate(Integer.parseInt(values[3]));
+        } //Option3
+
+        if(values[1].equals("WAIT")){
+            if(values[2].equals("FOR")){
+                myClock.waitFor(Double.parseDouble(values[3]));
+            }else if(values[2].equals("UNTIL")){
+                myClock.waitUntil(Double.parseDouble(values[3]));
+            }
+        } //Option 8 and 9, option 7 at the top = Done
+
+    }
+    public void run(String[] values) throws ParseException {
+        System.out.println("Run");
+        try {
+            parserHelper.run(values[1]);
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
 }
