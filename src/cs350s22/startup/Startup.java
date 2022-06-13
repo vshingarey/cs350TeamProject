@@ -33,7 +33,6 @@ public class Startup
         // this command must come first. The filenames do not matter here
         startup.parse("@CONFIGURE LOG \"a.txt\" DOT SEQUENCE \"b.txt\" NETWORK \"c.txt\" XML \"d.txt\"");
 
-
 //Mapper Tests
         //startup.parse("@CREATE MAPPER myMapper EQUATION PASSTHROUGH");
         //startup.parse("@CREATE MAPPER myMapper EQUATION SCALE 10");

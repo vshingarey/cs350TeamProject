@@ -22,6 +22,7 @@ import cs350s22.component.sensor.mapper.*;
 import cs350s22.component.sensor.reporter.*;
 import cs350s22.component.sensor.watchdog.*;
 import cs350s22.component.controller.*;
+import cs350s22.component.logger.*;
 import cs350s22.test.MySensor;
 
 
@@ -53,7 +54,7 @@ public class Parser
 
         String[] values = parse.split(" "); //splits the string into single strings and stores in values
 
-        if(values.length > 1) {     //deals with startup.parse("@exit") in main
+        //if(values.length > 1) {     //deals with startup.parse("@exit") in main
 
             values[0] = values[0].toUpperCase();    //converts values[1] string to uppercase
 
@@ -77,7 +78,16 @@ public class Parser
                     throw new IOException("Error: command not found: " + values[1]);
                 }
             }
-        } // if statement returns nothing if values.length == 1 or less
+            else if (values[0].equals("@CONFIGURE")) {
+            	configure(values);
+            	
+            }
+            else if(values[0].equals("@EXIT")) 
+            {
+            	parserHelper.exit();
+            }
+            
+        //} // if statement returns nothing if values.length == 1 or less
 
     } // ends parse method
 
@@ -543,6 +553,29 @@ public class Parser
                 throw new IOException("Watchdog command error" + values[2]);
         }
 
+    }
+    
+    
+    
+    public void configure(String[] values)throws IOException {
+    	
+    	if(values[1].toUpperCase().equals("LOG")) {
+	    	Filespec fs = new Filespec(values[2]);
+	    	LoggerMessage.initialize(fs);
+    	}
+    	
+    	if(values[3].toUpperCase().equals("DOT")) {
+        	if(values[4].toUpperCase().equals("SEQUENCE")) {
+    	    	Filespec fs = new Filespec(values[5]);
+    	    	
+    	    	if(values[6].toUpperCase().equals("NETWORK")) {
+    	    		Filespec fs2 = new Filespec(values[7]);
+    	    		LoggerMessageSequencing.initialize(fs, fs2);
+    	    	}
+        		
+        	}
+    		
+    	}
     }
 
 }
