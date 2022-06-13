@@ -1,6 +1,6 @@
 package cs350s22.component.ui.parser;
 
-//Identifier is the class we use for defining the ids of each component
+
 import cs350s22.component.A_Component;
 import cs350s22.component.sensor.mapper.function.equation.EquationNormalized;
 import cs350s22.component.sensor.mapper.function.equation.EquationPassthrough;
@@ -40,7 +40,6 @@ public class Parser
     SymbolTable<A_Reporter> symbolTableReporter;
     SymbolTable<A_Watchdog> symbolTableWatchdog;
     SymbolTable<A_Controller> symbolTableController;
-    SymbolTable<A_ControllerNonforwarding> symbolTableNetwork;
 
     public Parser (A_ParserHelper parserHelper, String parse)
     {
@@ -176,7 +175,7 @@ public class Parser
                 maxVal,jerkLimitVal,sensorList);
         symbolTableActuator.add(actuatorId,ap);
 
-       // System.out.println(symbolTableActuator.get(actuatorId));
+        // System.out.println(symbolTableActuator.get(actuatorId));
     }
     private void sensorBuilder(String[] values)
     {
@@ -422,47 +421,47 @@ public class Parser
         List<Identifier> idList = new ArrayList<>();
         List<Identifier> groupList = new ArrayList<>();
 
-            if(values[5].equals("IDS")) {
-                for(int i = 6; i < values.length; i++){
-                    if(values[i].equals("DELTA") || values[i].equals("FREQUENCY")){ //means there is no groups provided
-                        idString = currentSB.toString(); 
-                        currentSB.setLength(0);
-                        deltaFrequencyInt = Integer.parseInt(values[i+1]);
-                        i = values.length;
-                    }else if(values[i].equals("GROUP") || values[i].equals("GROUPS")) { //if there is groups
-                        idString = currentSB.toString(); //sets currentSB to idString
-                        currentSB.setLength(0);          //resets the currentSB
-                        for(int j = i + 1; j < values.length; j++){
-                            if(values[j].equals("DELTA") || values[j].equals("FREQUENCY")){
-                                groupString = currentSB.toString();
-                                currentSB.setLength(0);
-                                deltaFrequencyInt = Integer.parseInt(values[j+1]);
-                                j = values.length;
-                                i = values.length;
-                            }else{
-                                currentSB.append(values[j]);
-                                currentSB.append(" "); //ends for loop if we get to GROUP or DELTA
-                            }
+        if(values[5].equals("IDS")) {
+            for(int i = 6; i < values.length; i++){
+                if(values[i].equals("DELTA") || values[i].equals("FREQUENCY")){ //means there is no groups provided
+                    idString = currentSB.toString();
+                    currentSB.setLength(0);
+                    deltaFrequencyInt = Integer.parseInt(values[i+1]);
+                    i = values.length;
+                }else if(values[i].equals("GROUP") || values[i].equals("GROUPS")) { //if there is groups
+                    idString = currentSB.toString(); //sets currentSB to idString
+                    currentSB.setLength(0);          //resets the currentSB
+                    for(int j = i + 1; j < values.length; j++){
+                        if(values[j].equals("DELTA") || values[j].equals("FREQUENCY")){
+                            groupString = currentSB.toString();
+                            currentSB.setLength(0);
+                            deltaFrequencyInt = Integer.parseInt(values[j+1]);
+                            j = values.length;
+                            i = values.length;
+                        }else{
+                            currentSB.append(values[j]);
+                            currentSB.append(" "); //ends for loop if we get to GROUP or DELTA
                         }
-                    }else{
-                        currentSB.append(values[i]);
-                        currentSB.append(" "); //ends for loop if we get to GROUP or DELTA
                     }
+                }else{
+                    currentSB.append(values[i]);
+                    currentSB.append(" "); //ends for loop if we get to GROUP or DELTA
                 }
             }
-            if(values[5].equals("GROUP") || values[5].equals("GROUPS")){ //deal with only groups and no IDS
-                for(int i = 6; i < values.length; i++){
-                    if(values[i].equals("DELTA") || values[i].equals("FREQUENCY")){
-                        groupString = currentSB.toString();
-                        currentSB.setLength(0);
-                        deltaFrequencyInt = Integer.parseInt(values[i+1]);
-                        i = values.length;
-                    }else{
-                        currentSB.append(values[i]);
-                        currentSB.append(" ");
-                    }
+        }
+        if(values[5].equals("GROUP") || values[5].equals("GROUPS")){ //deal with only groups and no IDS
+            for(int i = 6; i < values.length; i++){
+                if(values[i].equals("DELTA") || values[i].equals("FREQUENCY")){
+                    groupString = currentSB.toString();
+                    currentSB.setLength(0);
+                    deltaFrequencyInt = Integer.parseInt(values[i+1]);
+                    i = values.length;
+                }else{
+                    currentSB.append(values[i]);
+                    currentSB.append(" ");
                 }
             }
+        }
         if(!groupString.isEmpty()) {
             String[] groupStringArr = groupString.split(" ");
             for (String temp : groupStringArr) {
