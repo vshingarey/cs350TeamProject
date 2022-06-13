@@ -35,9 +35,9 @@ public class Startup
 
 
 //Network Tests
-        startup.parse("@CREATE SENSOR POSITION mySensor1 GROUPS myGroup1 REPORTERS myReporter1 WATCHDOGS myWatchdog1 MAPPER myMapper1");
-        startup.parse("@CREATE ACTUATOR LINEAR myActuator1 GROUPS myGroup1 myGroup2 SENSOR mySensor1 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 10 INITIAL 2 JERK LIMIT 3");
-        startup.parse("@BUILD NETWORK WITH COMPONENT myControllerMaster myActuator1 mySensor1");
+        //startup.parse("@CREATE SENSOR POSITION mySensor1 GROUPS myGroup1 REPORTERS myReporter1 WATCHDOGS myWatchdog1 MAPPER myMapper1");
+        //startup.parse("@CREATE ACTUATOR LINEAR myActuator1 GROUPS myGroup1 myGroup2 SENSOR mySensor1 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 10 INITIAL 2 JERK LIMIT 3");
+        //startup.parse("@BUILD NETWORK WITH COMPONENT myControllerMaster myActuator1 mySensor1");
         //startup.parse("@BUILD NETWORK WITH COMPONENTS myController myActuator");
 
 
