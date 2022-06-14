@@ -94,10 +94,11 @@ public class Startup
 
 //Actuator Tests
 
-         //startup.parse("@CREATE ACTUATOR LINEAR myActuator0 GROUPS myGroup1 myGroup2 SENSOR mySensor1 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 10 INITIAL 2 JERK LIMIT 3");
+        //startup.parse("@CREATE ACTUATOR LINEAR myActuator0 GROUPS myGroup1 myGroup2 SENSOR mySensor1 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 10 INITIAL 2 JERK LIMIT 3");
 
 
-        startup.parse("@EXIT");
+
+        //startup.parse("@EXIT");
     }
 
     // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
