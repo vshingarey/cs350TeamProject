@@ -786,17 +786,17 @@ public class Parser
 			if(values[i].toUpperCase().equals("PING")){
 				hasPING = i;
 			}
-			else if(values[i].toUpperCase().equals("ID")){
-				hasID = i;
-			}
-			else if(values[i].toUpperCase().equals("GROUPS")){
-				hasGROUPS = i;
-			}
 			else if(values[i].toUpperCase().equals("REQUEST")){
 				hasREQUEST = i;
 			}
 			else if(values[i].toUpperCase().equals("REPORT")){
 				hasREPORT = i;
+			}
+			if(values[i].toUpperCase().equals("ID")){
+				hasID = i;
+			}
+			if(values[i].toUpperCase().equals("GROUPS")){
+				hasGROUPS = i;
 			}
 		}
 		List<Identifier> idList = new ArrayList<>();
@@ -824,7 +824,7 @@ public class Parser
 						idList.remove(id);
 					}
 				}
-				cli.issueMessage(new MessageActuatorRequestPosition(idList, Double.parseDouble(values[values.length])));
+				cli.issueMessage(new MessageActuatorRequestPosition(idList, Double.parseDouble(values[values.length - 1])));
 			}
 			else if(hasGROUPS > 0 && hasID < 0){ //GROUPS passed, but no ID passed
 				//values[2] == GROUPS
@@ -836,7 +836,7 @@ public class Parser
 						idList.remove(group);
 					}
 				}
-				cli.issueMessage(new MessageActuatorRequestPosition(groupList, Double.parseDouble(values[values.length])));
+				cli.issueMessage(new MessageActuatorRequestPosition(groupList, Double.parseDouble(values[values.length - 1])));
 			}
 			else if(hasID > 0 && hasGROUPS > 0){ //ID passed and GROUPS passed
 				if(hasID < hasGROUPS){ //ID comes before GROUPS
@@ -865,8 +865,8 @@ public class Parser
 						idList.remove(group);
 					}
 				}
-				cli.issueMessage(new MessageActuatorRequestPosition(idList, Double.parseDouble(values[values.length])));
-				cli.issueMessage(new MessageActuatorRequestPosition(groupList, Double.parseDouble(values[values.length])));
+				cli.issueMessage(new MessageActuatorRequestPosition(idList, Double.parseDouble(values[values.length - 1])));
+				cli.issueMessage(new MessageActuatorRequestPosition(groupList, Double.parseDouble(values[values.length - 1])));
 			}
 			else {
 				throw new IOException("Invalid SEND MESSAGE POSITION REQUEST");

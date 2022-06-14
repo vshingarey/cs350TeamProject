@@ -1,0 +1,7 @@
+seqdiag {
+ activation = none;
+ edge_length = 300;
+ span_height = 12;
+ default_fontsize = 10;
+===done===
+}
