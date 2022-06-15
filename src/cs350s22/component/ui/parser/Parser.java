@@ -814,63 +814,63 @@ public class Parser
 		else if(hasREQUEST > 0) { //SEND MESSAGE ... POSITION REQUEST value
 			/* Sends a request message to the recipients such that their position is expected to go to value, if possible. 
 			Inappropriate requests (for example, to a sensor) are ignored. */
-			if(hasID > 0 && hasGROUPS < 0){ //ID passed, but no GROUPS passed
-				//values[2] == ID
-				for(int i = 3; i < hasREQUEST - 1; i++){
-					idList.add(Identifier.make(values[i]));
-				}
-				for (Identifier id : idList) { //remove inappropriate ids
-					if(symbolTableController.contains(id) || symbolTableSensor.contains(id) || symbolTableWatchdog.contains(id) || symbolTableMapper.contains(id) || symbolTableReporter.contains(id)){
-						idList.remove(id);
-					}
-				}
-				cli.issueMessage(new MessageActuatorRequestPosition(idList, Double.parseDouble(values[values.length - 1])));
-			}
-			else if(hasGROUPS > 0 && hasID < 0){ //GROUPS passed, but no ID passed
-				//values[2] == GROUPS
-				for(int i = 3; i < hasREQUEST - 1; i++){
-					groupList.add(Identifier.make(values[i]));
-				}
-				for (Identifier group : groupList) { //remove inappropriate ids
-					if(symbolTableController.contains(group) || symbolTableSensor.contains(group) || symbolTableWatchdog.contains(group) || symbolTableMapper.contains(group) || symbolTableReporter.contains(group)){
-						idList.remove(group);
-					}
-				}
-				cli.issueMessage(new MessageActuatorRequestPosition(groupList, Double.parseDouble(values[values.length - 1])));
-			}
-			else if(hasID > 0 && hasGROUPS > 0){ //ID passed and GROUPS passed
-				if(hasID < hasGROUPS){ //ID comes before GROUPS
-					for(int i = 3; i < hasGROUPS; i++){
-						idList.add(Identifier.make(values[i]));
-					}
-					for(int i = hasGROUPS + 1; i < hasREQUEST - 1; i ++){
-						groupList.add(Identifier.make(values[i]));
-					}
-				}
-				else{ //GROUPS comes before ID
-					for(int i = 3; i < hasID; i++){
-						groupList.add(Identifier.make(values[i]));
-					}
-					for(int i = hasID + 1; i < hasREQUEST - 1; i++){
-						idList.add(Identifier.make(values[i]));
-					}
-				}
-				for (Identifier id : idList) { //remove inappropriate ids
-					if(symbolTableController.contains(id) || symbolTableSensor.contains(id) || symbolTableWatchdog.contains(id) || symbolTableMapper.contains(id) || symbolTableReporter.contains(id)){
-						idList.remove(id);
-					}
-				}
-				for (Identifier group : groupList) { //remove inappropriate ids
-					if(symbolTableController.contains(group) || symbolTableSensor.contains(group) || symbolTableWatchdog.contains(group) || symbolTableMapper.contains(group) || symbolTableReporter.contains(group)){
-						idList.remove(group);
-					}
-				}
-				cli.issueMessage(new MessageActuatorRequestPosition(idList, Double.parseDouble(values[values.length - 1])));
-				cli.issueMessage(new MessageActuatorRequestPosition(groupList, Double.parseDouble(values[values.length - 1])));
-			}
-			else {
-				throw new IOException("Invalid SEND MESSAGE POSITION REQUEST");
-			}
+            if(hasID > 0 && hasGROUPS < 0){ //ID passed, but no GROUPS passed
+                //values[2] == ID
+                for(int i = 3; i < hasREQUEST - 1; i++){
+                    idList.add(Identifier.make(values[i]));
+                }
+                for (Identifier id : idList) { //remove inappropriate ids
+                    if(symbolTableController.contains(id) || symbolTableSensor.contains(id) || symbolTableWatchdog.contains(id) || symbolTableMapper.contains(id) || symbolTableReporter.contains(id)){
+                        idList.remove(id);
+                    }
+                }
+                cli.issueMessage(new MessageActuatorRequestPosition(idList, Double.parseDouble(values[values.length - 1])));
+            }
+            else if(hasGROUPS > 0 && hasID < 0){ //GROUPS passed, but no ID passed
+                //values[2] == GROUPS
+                for(int i = 3; i < hasREQUEST - 1; i++){
+                    groupList.add(Identifier.make(values[i]));
+                }
+                for (Identifier group : groupList) { //remove inappropriate ids
+                    if(symbolTableController.contains(group) || symbolTableSensor.contains(group) || symbolTableWatchdog.contains(group) || symbolTableMapper.contains(group) || symbolTableReporter.contains(group)){
+                        groupList.remove(group);
+                    }
+                }
+                cli.issueMessage(new MessageActuatorRequestPosition(groupList, Double.parseDouble(values[values.length - 1])));
+            }
+            else if(hasID > 0 && hasGROUPS > 0){ //ID passed and GROUPS passed
+                if(hasID < hasGROUPS){ //ID comes before GROUPS
+                    for(int i = 3; i < hasGROUPS; i++){
+                        idList.add(Identifier.make(values[i]));
+                    }
+                    for(int i = hasGROUPS + 1; i < hasREQUEST - 1; i ++){
+                        groupList.add(Identifier.make(values[i]));
+                    }
+                }
+                else{ //GROUPS comes before ID
+                    for(int i = 3; i < hasID; i++){
+                        groupList.add(Identifier.make(values[i]));
+                    }
+                    for(int i = hasID + 1; i < hasREQUEST - 1; i++){
+                        idList.add(Identifier.make(values[i]));
+                    }
+                }
+                for (Identifier id : idList) { //remove inappropriate ids
+                    if(symbolTableController.contains(id) || symbolTableSensor.contains(id) || symbolTableWatchdog.contains(id) || symbolTableMapper.contains(id) || symbolTableReporter.contains(id)){
+                        idList.remove(id);
+                    }
+                }
+                for (Identifier group : groupList) { //remove inappropriate ids
+                    if(symbolTableController.contains(group) || symbolTableSensor.contains(group) || symbolTableWatchdog.contains(group) || symbolTableMapper.contains(group) || symbolTableReporter.contains(group)){
+                        groupList.remove(group);
+                    }
+                }
+                cli.issueMessage(new MessageActuatorRequestPosition(idList, Double.parseDouble(values[values.length - 1])));
+                cli.issueMessage(new MessageActuatorRequestPosition(groupList, Double.parseDouble(values[values.length - 1])));
+            }
+            else {
+                throw new IOException("Invalid SEND MESSAGE POSITION REQUEST");
+            }
 			/* Get the command line interface from ParserHelper.
 			A_Message message = new MessageActuatorRequestPosition(as_appropriate); 
 			cli.issueMessage(message); */
@@ -879,74 +879,71 @@ public class Parser
 		else if(hasREPORT > 0) { //SEND MESSAGE ... POSITION REPORT
 			/* Sends a request message to the recipients such that they report their current value, if possible. 
 			Inappropriate requests (for example, to a controller) are ignored. */
-			if(hasID > 0 && hasGROUPS < 0){ //ID passed, but no GROUPS passed
-				//values[2] == ID
-				for(int i = 3; i < hasREPORT - 1; i++){
-					idList.add(Identifier.make(values[i]));
-				}
-				for (Identifier id : idList) { //remove inappropriate ids
-					if(symbolTableController.contains(id) || symbolTableSensor.contains(id) || symbolTableWatchdog.contains(id) || symbolTableMapper.contains(id) || symbolTableReporter.contains(id)){
-						idList.remove(id);
-					}
-				}
-				cli.issueMessage(new MessageActuatorReportPosition(idList));
-			}
-			else if(hasGROUPS > 0 && hasID < 0){ //GROUPS passed, but no ID passed
-				//values[2] == GROUPS
-				for(int i = 3; i < hasREPORT - 1; i++){
-					groupList.add(Identifier.make(values[i]));
-				}
-				for (Identifier group : groupList) { //remove inappropriate ids
-					if(symbolTableController.contains(group) || symbolTableSensor.contains(group) || symbolTableWatchdog.contains(group) || symbolTableMapper.contains(group) || symbolTableReporter.contains(group)){
-						idList.remove(group);
-					}
-				}
-				cli.issueMessage(new MessageActuatorReportPosition(groupList));
-			}
-			else if(hasID > 0 && hasGROUPS > 0){ //ID passed and GROUPS passed
-				if(hasID < hasGROUPS){ //ID comes before GROUPS
-					for(int i = 3; i < hasGROUPS; i++){
-						idList.add(Identifier.make(values[i]));
-					}
-					for(int i = hasGROUPS + 1; i < hasREPORT - 1; i ++){
-						groupList.add(Identifier.make(values[i]));
-					}
-				}
-				else{ //GROUPS comes before ID
-					for(int i = 3; i < hasID; i++){
-						groupList.add(Identifier.make(values[i]));
-					}
-					for(int i = hasID + 1; i < hasREPORT - 1; i++){
-						idList.add(Identifier.make(values[i]));
-					}
-				}
-				for (Identifier id : idList) { //remove inappropriate ids
-					if(symbolTableController.contains(id) || symbolTableSensor.contains(id) || symbolTableWatchdog.contains(id) || symbolTableMapper.contains(id) || symbolTableReporter.contains(id)){
-						idList.remove(id);
-					}
-				}
-				for (Identifier group : groupList) { //remove inappropriate ids
-					if(symbolTableController.contains(group) || symbolTableSensor.contains(group) || symbolTableWatchdog.contains(group) || symbolTableMapper.contains(group) || symbolTableReporter.contains(group)){
-						idList.remove(group);
-					}
-				}
-				cli.issueMessage(new MessageActuatorReportPosition(idList));
-				cli.issueMessage(new MessageActuatorReportPosition(groupList));
-			}
-			else {
-				throw new IOException("Invalid SEND MESSAGE POSITION REPORT");
-			}
+            if(hasID > 0 && hasGROUPS < 0){ //ID passed, but no GROUPS passed
+                //values[2] == ID
+                for(int i = 3; i < hasREPORT - 1; i++){
+                    idList.add(Identifier.make(values[i]));
+                }
+                for (Identifier id : idList) { //remove inappropriate ids
+                    if(symbolTableController.contains(id) || symbolTableSensor.contains(id) || symbolTableWatchdog.contains(id) || symbolTableMapper.contains(id) || symbolTableReporter.contains(id)){
+                        idList.remove(id);
+                    }
+                }
+                cli.issueMessage(new MessageActuatorReportPosition(idList));
+            }
+            else if(hasGROUPS > 0 && hasID < 0){ //GROUPS passed, but no ID passed
+                //values[2] == GROUPS
+                for(int i = 3; i < hasREPORT - 1; i++){
+                    groupList.add(Identifier.make(values[i]));
+                }
+                for (Identifier group : groupList) { //remove inappropriate ids
+                    if(symbolTableController.contains(group) || symbolTableSensor.contains(group) || symbolTableWatchdog.contains(group) || symbolTableMapper.contains(group) || symbolTableReporter.contains(group)){
+                        idList.remove(group);
+                    }
+                }
+                cli.issueMessage(new MessageActuatorReportPosition(groupList));
+            }
+            else if(hasID > 0 && hasGROUPS > 0){ //ID passed and GROUPS passed
+                if(hasID < hasGROUPS){ //ID comes before GROUPS
+                    for(int i = 3; i < hasGROUPS; i++){
+                        idList.add(Identifier.make(values[i]));
+                    }
+                    for(int i = hasGROUPS + 1; i < hasREPORT - 1; i ++){
+                        groupList.add(Identifier.make(values[i]));
+                    }
+                }
+                else{ //GROUPS comes before ID
+                    for(int i = 3; i < hasID; i++){
+                        groupList.add(Identifier.make(values[i]));
+                    }
+                    for(int i = hasID + 1; i < hasREPORT - 1; i++){
+                        idList.add(Identifier.make(values[i]));
+                    }
+                }
+                for (Identifier id : idList) { //remove inappropriate ids
+                    if(symbolTableController.contains(id) || symbolTableSensor.contains(id) || symbolTableWatchdog.contains(id) || symbolTableMapper.contains(id) || symbolTableReporter.contains(id)){
+                        idList.remove(id);
+                    }
+                }
+                for (Identifier group : groupList) { //remove inappropriate ids
+                    if(symbolTableController.contains(group) || symbolTableSensor.contains(group) || symbolTableWatchdog.contains(group) || symbolTableMapper.contains(group) || symbolTableReporter.contains(group)){
+                        groupList.remove(group);
+                    }
+                }
+                cli.issueMessage(new MessageActuatorReportPosition(idList));
+                cli.issueMessage(new MessageActuatorReportPosition(groupList));
+            }
+            else {
+                throw new IOException("Invalid SEND MESSAGE POSITION REPORT");
+            }
 
-		}
-		else{
-			throw new IOException("Error: command not found: "+ values[2]);
-		}
+        }
+        else{
+            throw new IOException("Error: command not found: "+ values[2]);
+        }
+    } //end messageBuilder
 
-	}
-    
-    
-    
-    public void configure(String[] values)throws IOException {
+	public void configure(String[] values)throws IOException {
     	
     	if(values[1].toUpperCase().equals("LOG")) {
 	    	Filespec fs = new Filespec(values[2]);
