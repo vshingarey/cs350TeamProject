@@ -30,6 +30,7 @@ import cs350s22.component.sensor.mapper.*;
 import cs350s22.component.sensor.reporter.*;
 import cs350s22.component.sensor.watchdog.*;
 import cs350s22.component.controller.*;
+import cs350s22.test.MyControllerMaster;
 import cs350s22.test.MySensor;
 
 
@@ -115,7 +116,7 @@ public class Parser
     } // ends parse method
 
     private void actuatorBuilder(String[] values){
-        System.out.println("actuator");
+        System.out.println("actuatorBuilder Reached");
         values[2] = values[2].toUpperCase(); // changes type of actuator to uppercase
 
 
@@ -202,7 +203,25 @@ public class Parser
                 maxVal,jerkLimitVal,sensorList);
         symbolTableActuator.add(actuatorId,ap);
 
-        // System.out.println(symbolTableActuator.get(actuatorId));
+
+        System.out.println(ap);
+
+/*
+        System.out.println(ap.getState());
+        System.out.println(ap.getValueTarget());
+        ap.setValueTarget(15);
+        System.out.println(ap.getValueTarget());
+        System.out.println("Test :" + ap.getValue());
+        ap.update();
+        Clock myClock = Clock.getInstance();
+        System.out.println("Testing time: " + myClock.getTime());
+        myClock.onestep();
+        System.out.println("Testing time: " + myClock.getTime());
+        ap.update();
+        System.out.println(ap.getValue());
+*/
+
+        //System.out.println(symbolTableActuator.get(actuatorId));
     }
     private void sensorBuilder(String[] values)
     {
@@ -284,10 +303,7 @@ public class Parser
                 currentStringBuilder.setLength(0);
             }
         }
-        System.out.println("Testing group string:   " + groupsString);
-        System.out.println("Testing reporters string:   " + reportersString);
-        System.out.println("Testing watchdogs string:   " + watchdogsString);
-        System.out.println("Testing mapper string:   " + mapperString);
+
 
         // Above deals with the String
 
@@ -343,7 +359,7 @@ public class Parser
             myNewSensor = new MySensor(sensorId);
             symbolTableSensor.add(sensorId,myNewSensor);
         }
-        System.out.println(symbolTableSensor.toString());
+        //System.out.println(symbolTableSensor.toString());
     }
     private void mapperBuilder(String[] values) throws IOException {
 
@@ -402,12 +418,13 @@ public class Parser
     }
     private void networkBuilder(String[] values)
     {
-        System.out.println("network");
+        System.out.println("networkBuilder Reached");
         symbolTableSensor = parserHelper.getSymbolTableSensor();
         symbolTableController = parserHelper.getSymbolTableController();
         symbolTableActuator = parserHelper.getSymbolTableActuator();
         A_Controller myController = parserHelper.getControllerMaster(); // master controller to add to
 
+        Network myNetwork = parserHelper.getNetwork();
 
         if(values[3].equals("COMPONENT") || values[3].equals("COMPONENTS")) {
             for (int i = 4; i < values.length; i++) {
@@ -419,6 +436,7 @@ public class Parser
                     System.out.println("checkmark actuator");
                     tempComponent = symbolTableActuator.get(tempId);
                     myController.addComponent(tempComponent);
+
                 }else if(symbolTableSensor.contains(tempId)){
                     System.out.println("checkmark sensor");
                     tempComponent = symbolTableSensor.get(tempId);
@@ -426,11 +444,7 @@ public class Parser
                 }
             }
         }
-
-        System.out.println("TESSTT");
-        System.out.println(parserHelper.getNetwork());
-
-
+        myNetwork.writeOutput();
     }
     private void reporterBuilder(String[] values) throws IOException {
 
@@ -857,6 +871,7 @@ public class Parser
     }
 
     public void configure(String[] values){
+
         try {
             Filespec fs1 = new Filespec(values[2]);
             LoggerMessage.initialize(fs1);
@@ -894,6 +909,7 @@ public class Parser
         if(values[1].equals("WAIT")){
             if(values[2].equals("FOR")){
                 myClock.waitFor(Double.parseDouble(values[3]));
+
             }else if(values[2].equals("UNTIL")){
                 myClock.waitUntil(Double.parseDouble(values[3]));
             }
@@ -968,7 +984,7 @@ public class Parser
                 }
                 for (Identifier group : groupList) { //remove inappropriate ids
                     if(symbolTableController.contains(group) || symbolTableSensor.contains(group) || symbolTableWatchdog.contains(group) || symbolTableMapper.contains(group) || symbolTableReporter.contains(group)){
-                        idList.remove(group);
+                        groupList.remove(group);
                     }
                 }
                 cli.issueMessage(new MessageActuatorRequestPosition(groupList, Double.parseDouble(values[values.length - 1])));
@@ -997,7 +1013,7 @@ public class Parser
                 }
                 for (Identifier group : groupList) { //remove inappropriate ids
                     if(symbolTableController.contains(group) || symbolTableSensor.contains(group) || symbolTableWatchdog.contains(group) || symbolTableMapper.contains(group) || symbolTableReporter.contains(group)){
-                        idList.remove(group);
+                        groupList.remove(group);
                     }
                 }
                 cli.issueMessage(new MessageActuatorRequestPosition(idList, Double.parseDouble(values[values.length - 1])));
@@ -1062,7 +1078,7 @@ public class Parser
                 }
                 for (Identifier group : groupList) { //remove inappropriate ids
                     if(symbolTableController.contains(group) || symbolTableSensor.contains(group) || symbolTableWatchdog.contains(group) || symbolTableMapper.contains(group) || symbolTableReporter.contains(group)){
-                        idList.remove(group);
+                        groupList.remove(group);
                     }
                 }
                 cli.issueMessage(new MessageActuatorReportPosition(idList));
@@ -1076,8 +1092,6 @@ public class Parser
         else{
             throw new IOException("Error: command not found: "+ values[2]);
         }
-
-
     }
 
 
