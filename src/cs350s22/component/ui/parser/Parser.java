@@ -58,16 +58,13 @@ public class Parser
 
     }
 
-    public void parse () throws IOException, ParseException {
+    public void parse () throws IOException, ParseException, InterruptedException {
 
         String[] values = parse.split(" "); //splits the string into single strings and stores in values
 
-
-        if(values.length > 1) {     //deals with startup.parse("@exit") in main
-
             values[0] = values[0].toUpperCase();    //converts values[1] string to uppercase
 
-            if (values[0].equals("@CREATE") || values[0].equals("@BUILD")) { //If second string is CREATE
+            if (values[0].equals("CREATE") || values[0].equals("BUILD")) { //If second string is CREATE
 
                 values[1] = values[1].toUpperCase(); // Change values[1] to upper case
 
@@ -93,24 +90,24 @@ public class Parser
                     default:
                         throw new IOException("Error: command not found: " + values[1]);
                 }
-            }else if(values[0].equals("@CONFIGURE")){
-                configure(values);
-            }else if(values[0].equals("@CLOCK")){
-                clock(values);
-            }else if(values[0].equals("@RUN")){
-                run(values);
             }else if(values[0].equals("SEND")){
                 messageBuilder(values);
+            }else if (values[0].equals("@CONFIGURE")) {
+            	configure(values);	
             }
-        }
-        if(values[0].equals("@CLOCK") && values.length == 1){
-            Clock myClock = Clock.getInstance();
-            System.out.println("Current clock: " + myClock.getTime());
-        }
-        if(values[0].equals("@EXIT")){
+            else if(values[0].equals("@EXIT")) {
+            	parserHelper.exit();
+            }
+            else if (values[0].equals("@CLOCK")) {
+            	clock(values);
+            }
+            else if (values[0].equals("@RUN")){
+            	if(values.length == 2){
+            		//String file = values[2].substring(0, )
+            		parserHelper.run(values[1]);
+            	}
+            }
 
-            parserHelper.exit();
-        }
 
 
     } // ends parse method
@@ -140,12 +137,12 @@ public class Parser
         double jerkLimitVal = 0.0;
 
         for(int i = 0; i < values.length; i++) {
-            switch (values[i]) {
+            switch (values[i].toUpperCase()) {
                 case "GROUPS":
                 case "GROUP":
 
                     for (int j = i + 1; j < values.length; j++) {
-                        if (values[j].equals("SENSOR") || values[j].equals("SENSORS") || values[j].equals("ACCELERATION")) {
+                        if (values[j].toUpperCase().equals("SENSOR") || values[j].toUpperCase().equals("SENSORS") || values[j].toUpperCase().equals("ACCELERATION")) {
                             groupString = currentSb.toString();
                             currentSb.setLength(0);
                             j = values.length;
@@ -158,7 +155,7 @@ public class Parser
                 case "SENSOR":
                 case "SENSORS":
                     for (int j = i + 1; j < values.length; j++) {
-                        if (values[j].equals("ACCELERATION")) {
+                        if (values[j].toUpperCase().equals("ACCELERATION")) {
                             sensorString = currentSb.toString();
                             currentSb.setLength(0);
                             j = values.length;
@@ -240,26 +237,26 @@ public class Parser
 
         for(int x = 0; x < values.length; x++){
 
-            if(values[x].equals("GROUP") || values[x].equals("GROUPS")){ //x = 4
+            if(values[x].toUpperCase().equals("GROUP") || values[x].toUpperCase().equals("GROUPS")){ //x = 4
                 x++; // x = 5
                 currentStringBuilder.append(values[x]);
                 currentStringBuilder.append(" ");
             }
-            if(x > 5 && (!values[x].equals("REPORTER") && !values[x].equals("REPORTERS") &&
-                    !values[x].equals("WATCHDOG") && !values[x].equals("WATCHDOGS") &&
-                    !values[x].equals("MAPPER"))){
+            if(x > 5 && (!values[x].toUpperCase().equals("REPORTER") && !values[x].toUpperCase().equals("REPORTERS") &&
+                    !values[x].toUpperCase().equals("WATCHDOG") && !values[x].toUpperCase().equals("WATCHDOGS") &&
+                    !values[x].toUpperCase().equals("MAPPER"))){
 
                 currentStringBuilder.append(values[x]);
                 currentStringBuilder.append(" ");
             }
-            if(x > 5 && (values[x].equals("REPORTER") || values[x].equals("REPORTERS"))){ // x = 7
+            if(x > 5 && (values[x].toUpperCase().equals("REPORTER") || values[x].toUpperCase().equals("REPORTERS"))){ // x = 7
                 isReporterThere = true;
                 if(groupsString.isEmpty()){
                     groupsString = currentStringBuilder.toString();
                     currentStringBuilder.setLength(0);
                 }
             }
-            if(x > 5 && (values[x].equals("WATCHDOG") || values[x].equals("WATCHDOGS"))){
+            if(x > 5 && (values[x].toUpperCase().equals("WATCHDOG") || values[x].toUpperCase().equals("WATCHDOGS"))){
                 isWatchDogThere = true;
                 if(groupsString.isEmpty()){ // if this is empty, that means we set groupString
                     groupsString = currentStringBuilder.toString();
@@ -270,7 +267,7 @@ public class Parser
                     isReporterSet = true;
                 }
             }
-            if(x > 5 && (values[x].equals("MAPPER"))){
+            if(x > 5 && (values[x].toUpperCase().equals("MAPPER"))){
                 isMapperThere = true;
                 if(groupsString.isEmpty()){
                     groupsString = currentStringBuilder.toString();
@@ -369,9 +366,9 @@ public class Parser
         values[4] = values[4].toUpperCase();
         symbolTableMapper = parserHelper.getSymbolTableMapper();
 
-        if(values[3].equals("EQUATION")){
+        if(values[3].toUpperCase().equals("EQUATION")){
 
-            switch (values[4]) {
+            switch (values[4].toUpperCase()) {
                 case "PASSTHROUGH": {
                     MapperEquation map = new MapperEquation(new EquationPassthrough());
                     symbolTableMapper.add(id, map);
@@ -395,16 +392,16 @@ public class Parser
                 }
             }
         }
-        else if(values[3].equals("INTERPOLATION")){ // Will leave for reference
+        else if(values[3].toUpperCase().equals("INTERPOLATION")){ // Will leave for reference
             MapLoader ml = new MapLoader(new Filespec(values[6]));
 
-            if(values[4].equals("LINEAR")){
+            if(values[4].toUpperCase().equals("LINEAR")){
                 InterpolatorLinear il = new InterpolatorLinear(ml.load());
                 MapperInterpolation map = new MapperInterpolation(il);
                 symbolTableMapper.add(id, map);
             }
 
-            else if(values[4].equals("SPLINE")){
+            else if(values[4].toUpperCase().equals("SPLINE")){
                 InterpolatorSpline is = new InterpolatorSpline(ml.load());
                 MapperInterpolation map = new MapperInterpolation(is);
                 symbolTableMapper.add(id, map);
@@ -426,7 +423,7 @@ public class Parser
 
         Network myNetwork = parserHelper.getNetwork();
 
-        if(values[3].equals("COMPONENT") || values[3].equals("COMPONENTS")) {
+        if(values[3].toUpperCase().equals("COMPONENT") || values[3].toUpperCase().equals("COMPONENTS")) {
             for (int i = 4; i < values.length; i++) {
                 Identifier tempId = Identifier.make(values[i]);
                 A_Component tempComponent;
@@ -462,7 +459,7 @@ public class Parser
         List<Identifier> idList = new ArrayList<>();
         List<Identifier> groupList = new ArrayList<>();
 
-        if(values[5].equals("IDS")) {
+        if(values[5].toUpperCase().equals("IDS")) {
             for(int i = 6; i < values.length; i++){
                 if(values[i].equals("DELTA") || values[i].equals("FREQUENCY")){ //means there is no groups provided
                     idString = currentSB.toString();
@@ -612,7 +609,7 @@ public class Parser
 
                 break;
             case "BAND":
-                switch (values[5]) {
+                switch (values[5].toUpperCase()) {
                     case "INSTANTANEOUS":
                         WatchdogBand watchdogBandInstant; //creates acceleration object
 
@@ -675,7 +672,7 @@ public class Parser
 
                 break;
             case "NOTCH":
-                switch (values[5]) {
+                switch (values[5].toUpperCase()) {
                     case "INSTANTANEOUS":
                         WatchdogNotch watchdogNotchInstant; //creates acceleration object
 
@@ -740,7 +737,7 @@ public class Parser
 
                 break;
             case "LOW":
-                switch (values[5]) {
+                switch (values[5].toUpperCase()) {
                     case "INSTANTANEOUS":
                         WatchdogLow watchdogLowInstant; //creates acceleration object
 
@@ -803,7 +800,7 @@ public class Parser
 
                 break;
             case "HIGH":
-                switch (values[5]) {
+                switch (values[5].toUpperCase()) {
                     case "INSTANTANEOUS":
                         WatchdogHigh watchdogHighInstant; //creates acceleration object
 
@@ -870,63 +867,74 @@ public class Parser
 
     }
 
-    public void configure(String[] values){
-
-        try {
-            Filespec fs1 = new Filespec(values[2]);
-            LoggerMessage.initialize(fs1);
-
-            Filespec fs2 = new Filespec((values[5]));
-            Filespec fs3 = new Filespec(values[7]);
-            LoggerMessageSequencing.initialize(fs2, fs3);
-        }catch (IOException e){
-            System.out.println("Something went wrong in Configure");
-        }
+    public void configure(String[] values)throws IOException {
+    	
+    	if(values[1].toUpperCase().equals("LOG")) {
+    		
+	    	Filespec fs = new Filespec(values[2]);
+	    	LoggerMessage.initialize(fs);
+    	}
+    	
+    	if(values[3].toUpperCase().equals("DOT")) {
+        	if(values[4].toUpperCase().equals("SEQUENCE")) {
+    	    	Filespec fs = new Filespec(values[5]);
+    	    	
+    	    	if(values[6].toUpperCase().equals("NETWORK")) {
+    	    		Filespec fs2 = new Filespec(values[7]);
+    	    		LoggerMessageSequencing.initialize(fs, fs2);
+    	    	}
+        		
+        	}
+    		
+    	}
     }
-
-    public void clock(String[] values){
-        Clock myClock = Clock.getInstance();
-
-        if(values[1].equals("PAUSE")){
-            myClock.isActive(false);
-        }else if(values[1].equals("RESUME")){
-            myClock.isActive(true);
-        } //Option1
-        if(values[1].equals("ONESTEP")){
-            if(!myClock.isActive()){ //If not active
-                if(values.length == 3){ // means there is count included
-                    myClock.onestep(Integer.parseInt(values[2]));
-                }else{
-                    myClock.onestep();
-                }
-            }
-        } //Option2
-
-        if(values[1].equals("SET")){
-            myClock.setRate(Integer.parseInt(values[3]));
-        } //Option3
-
-        if(values[1].equals("WAIT")){
-            if(values[2].equals("FOR")){
-                myClock.waitFor(Double.parseDouble(values[3]));
-
-            }else if(values[2].equals("UNTIL")){
-                myClock.waitUntil(Double.parseDouble(values[3]));
-            }
-        } //Option 8 and 9, option 7 at the top = Done
-
-    }
-    public void run(String[] values) throws ParseException {
-        System.out.println("Run");
-        try {
-            parserHelper.run(values[1]);
-
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+    public void clock(String[] values) throws IOException,InterruptedException
+    {
+    	if(values.length == 1) 
+			System.out.println(Clock.getInstance().getTime());
+    	else if(values[1].toUpperCase().equals("PAUSE"))
+			Clock.getInstance().isActive(false);
+		else if (values[1].toUpperCase().equals("RESUME")) 
+			Clock.getInstance().isActive(true);
+		else if(values[1].toUpperCase().equals("ONESTEP")) 
+		{
+			if(values.length == 2) 
+			{
+				Clock.getInstance().onestep();
+			}
+			if(values.length == 3)
+			{
+				Clock.getInstance().onestep(Integer.valueOf(values[2]));
+			}
+		}
+		else if (values[1].toUpperCase().equals("WAIT") && values[2].toUpperCase().equals("FOR")) 
+		{
+			if(values.length == 4)
+				Clock.getInstance().waitFor(Long.valueOf(values[3]));
+			else 
+				throw new IOException("Error: value for WAIT FOR not entered");
+			
+		}
+		else if (values[1].toUpperCase().equals("SET") && values[2].toUpperCase().equals("RATE")) 
+		{
+			if(values.length == 4)
+				Clock.getInstance().setRate(Integer.valueOf(values[3]));
+		}
+		else if (values[1].toUpperCase().equals("WAIT") && values[2].toUpperCase().equals("UNTIL")) 
+		{
+			if(values.length == 4)
+				Clock.getInstance().waitUntil(Integer.valueOf(values[3]));;
+		}
+		else 
+			throw new IOException("Error: clock has incorrect inputs");
     }
     private void messageBuilder(String[] values) throws IOException
     {
+    	symbolTableController = parserHelper.getSymbolTableController();
+    	symbolTableSensor = parserHelper.getSymbolTableSensor();
+    	symbolTableWatchdog = parserHelper.getSymbolTableWatchdog();
+    	symbolTableMapper = parserHelper.getSymbolTableMapper();
+    	symbolTableReporter = parserHelper.getSymbolTableReporter();
         System.out.print("message");
         int hasPING = -1;
         int hasID = -1;

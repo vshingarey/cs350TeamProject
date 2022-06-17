@@ -3,12 +3,14 @@ package cs350s22.startup;
 import cs350s22.component.actuator.A_Actuator;
 import cs350s22.component.actuator.ActuatorLinear;
 import cs350s22.component.actuator.ActuatorRotary;
+import cs350s22.component.logger.LoggerActuator;
 import cs350s22.component.sensor.A_Sensor;
 import cs350s22.component.ui.parser.A_ParserHelper;
 import cs350s22.component.ui.parser.Parser;
 import cs350s22.component.ui.parser.ParserHelper;
 import cs350s22.component.ui.parser.SymbolTable;
 import cs350s22.support.Clock;
+import cs350s22.support.Filespec;
 import cs350s22.support.Identifier;
 import cs350s22.test.ActuatorPrototype;
 import cs350s22.test.MyActuator;
@@ -31,13 +33,17 @@ public class Startup
     // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     public static void main(final String[] arguments) throws Exception
     {
+        LoggerActuator.initialize(Filespec.make("blah"));
         Startup startup = new Startup();
+
+        
+        startup._parserHelper.run("cs350TeamProject/src/B.2");
         // this command must come first. The filenames do not matter here
-        startup.parse("@CONFIGURE LOG \"a.txt\" DOT SEQUENCE \"b.txt\" NETWORK \"c.txt\" XML \"d.txt\"");
+        //startup.parse("@configure LOG \"a.txt\" DOT SEQUENCE \"b.txt\" NETWORK \"c.txt\" XML \"d.txt\"");
         //startup.parse("@CLOCK PAUSE");
-        //startup.parse("@CREATE ACTUATOR LINEAR myActuator0 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 20 INITIAL 2 JERK LIMIT 3");
-        //startup.parse("@BUILD NETWORK WITH COMPONENT myControllerMaster myActuator0");
-        startup.parse("@EXIT");
+        //startup.parse("create actuator linear myActuator0 acceleration LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 20 INITIAL 2 JERK LIMIT 3");
+        //startup.parse("BUILD NETWORK WITH COMPONENT myControllerMaster myActuator0");
+        //startup.parse("@exit");
 
 
 
