@@ -1,30 +1,27 @@
 package cs350s22.startup;
 
-import cs350s22.component.actuator.A_Actuator;
-import cs350s22.component.actuator.ActuatorLinear;
-import cs350s22.component.actuator.ActuatorRotary;
+import cs350s22.component.controller.A_Controller;
+import cs350s22.component.logger.LoggerActuator;
 import cs350s22.component.sensor.A_Sensor;
 import cs350s22.component.ui.parser.A_ParserHelper;
 import cs350s22.component.ui.parser.Parser;
 import cs350s22.component.ui.parser.ParserHelper;
 import cs350s22.component.ui.parser.SymbolTable;
-import cs350s22.support.Clock;
+import cs350s22.network.Network;
+import cs350s22.support.Filespec;
 import cs350s22.support.Identifier;
-import cs350s22.test.ActuatorPrototype;
-import cs350s22.test.MyActuator;
 
-import javax.sound.midi.spi.SoundbankReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Scanner;
 
 //=================================================================================================================================================================================
 public class Startup
 {
-    private final A_ParserHelper _parserHelper = new ParserHelper();
+    private static final A_ParserHelper _parserHelper = new ParserHelper();
 
     // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     public Startup()
     {
+        LoggerActuator.initialize(Filespec.make("blah"));
         System.out.println("Welcome to your Startup class");
     }
 
@@ -33,10 +30,32 @@ public class Startup
     {
         Startup startup = new Startup();
         // this command must come first. The filenames do not matter here
+        Scanner scanner = new Scanner(System.in);
+        Network ourNetwork = _parserHelper.getNetwork();
+        SymbolTable<A_Sensor> myTestSensor = _parserHelper.getSymbolTableSensor();
+
         startup.parse("@CONFIGURE LOG \"a.txt\" DOT SEQUENCE \"b.txt\" NETWORK \"c.txt\" XML \"d.txt\"");
         //startup.parse("@CLOCK PAUSE");
-        //startup.parse("@CREATE ACTUATOR LINEAR myActuator0 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 20 INITIAL 2 JERK LIMIT 3");
-        //startup.parse("@BUILD NETWORK WITH COMPONENT myControllerMaster myActuator0");
+        startup.parse("@CREATE ACTUATOR LINEAR myActuator1 SENSOR mySensor1 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 20 INITIAL 2 JERK LIMIT 3");
+        startup.parse("@CREATE ACTUATOR ROTARY myActuator2 SENSOR mySensor1 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 20 INITIAL 2 JERK LIMIT 3");
+        startup.parse("@CREATE ACTUATOR LINEAR myActuator3 GROUPS myGroup3 SENSOR mySensor1 ACCELERATION LEADIN 0.1 LEADOUT -0.2 RELAX 0.3 VELOCITY LIMIT 5 VALUE MIN 1 MAX 20 INITIAL 2 JERK LIMIT 3");
+
+        startup.parse("@CREATE SENSOR POSITION mySensor1 GROUPS myGroup1 REPORTERS myReporter1 WATCHDOGS myWatchdog1 MAPPER myMapper1");
+        //startup.parse("@CREATE MAPPER myMapper1 EQUATION PASSTHROUGH");
+        //startup.parse("@CREATE WATCHDOG ACCELERATION myWatchdog1 MODE INSTANTANEOUS THRESHOLD LOW 1 HIGH 3 GRACE 4");
+        startup.parse("@CREATE REPORTER CHANGE myReporter1 NOTIFY IDS myActuator1 GROUPS myGroup1 FREQUENCY 1");
+        //startup.parse("@CREATE SENSOR POSITION mySensor1 GROUPS myGroup1 REPORTERS myReporter1 WATCHDOGS myWatchdog1 MAPPER myMapper1");
+
+        //startup.parse("@CREATE SENSOR POSITION mySensor8 REPORTER myReporter1");
+        startup.parse("@BUILD NETWORK WITH COMPONENT myControllerMaster myActuator1 myActuator2 myGroup3 mySensor1");
+        startup.parse("@CLOCK ");
+
+
+        //startup.parse("@SET SENSOR mySensor1 VALUE 35");
+        //startup.parse("@SET SENSOR mySensor1 VALUE 45");
+
+
+
         startup.parse("@EXIT");
 
 

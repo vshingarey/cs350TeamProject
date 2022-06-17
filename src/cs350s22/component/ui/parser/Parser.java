@@ -38,7 +38,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class Parser
 {
@@ -99,8 +101,10 @@ public class Parser
                 clock(values);
             }else if(values[0].equals("@RUN")){
                 run(values);
-            }else if(values[0].equals("SEND")){
+            }else if(values[0].equals("@SEND")){
                 messageBuilder(values);
+            }else if(values[0].equals("@SET") || values[0].equals("@GET")){
+                setGetSensor(values);
             }
         }
         if(values[0].equals("@CLOCK") && values.length == 1){
@@ -114,6 +118,26 @@ public class Parser
 
 
     } // ends parse method
+
+    public void setGetSensor(String[] values) throws IOException {
+        symbolTableSensor = parserHelper.getSymbolTableSensor();
+        symbolTableController = parserHelper.getSymbolTableController();
+        Identifier tempId = Identifier.make(values[2]);
+
+
+        if(values[0].equals("@SET")){
+            double value = Double.parseDouble(values[4]);
+
+            symbolTableSensor.get(tempId).setValue(value);
+
+        }else if(values[0].equals("@GET")){
+            if(symbolTableSensor.contains(tempId)){
+                System.out.println("Your " + values[2] + " value is: " + symbolTableSensor.get(tempId).getValue());
+            }
+        }
+
+
+    }
 
     private void actuatorBuilder(String[] values){
         System.out.println("actuatorBuilder Reached");
@@ -225,8 +249,6 @@ public class Parser
     }
     private void sensorBuilder(String[] values)
     {
-        System.out.println("sensor");
-
         StringBuilder currentStringBuilder = new StringBuilder();
 
         String groupsString = "";
@@ -320,6 +342,7 @@ public class Parser
         Identifier sensorId = Identifier.make(values[3]); //sensor id to add the sensor to table
 
         if(!groupsString.isEmpty()){
+
             String[] groupsStringArr = groupsString.split(" ");
             for(String temp: groupsStringArr){
                 Identifier tempId = Identifier.make(temp);
@@ -350,16 +373,20 @@ public class Parser
             Identifier tempId = Identifier.make(mapperString);
             if(symbolTableMapper.contains(tempId)) {
                 mapper = symbolTableMapper.get(tempId);
+
             }
         }
         if(!reporterList.isEmpty() && !watchdogList.isEmpty() && mapper != null){
             myNewSensor = new MySensor(sensorId,groupList,reporterList,watchdogList,mapper);
             symbolTableSensor.add(sensorId,myNewSensor);
+
         }else{
+
             myNewSensor = new MySensor(sensorId);
             symbolTableSensor.add(sensorId,myNewSensor);
         }
-        //System.out.println(symbolTableSensor.toString());
+
+
     }
     private void mapperBuilder(String[] values) throws IOException {
 
@@ -525,6 +552,7 @@ public class Parser
                 throw new IOException("idList or groupList in reporter creation was null in reporter method");
             }
         }else if(values[2].equals("FREQUENCY")){
+
             if(!idList.isEmpty() && !groupList.isEmpty()) {
                 reporterFrequencyObj = new ReporterFrequency(idList, groupList, deltaFrequencyInt);
                 symbolTableReporter.add(reporterId,reporterFrequencyObj);
@@ -535,7 +563,7 @@ public class Parser
             throw new IOException("Error in Command: " + values[2]);
         }
 
-        System.out.println(symbolTableReporter.toString());
+       //System.out.println(symbolTableReporter.toString());
 
     }
     private void watchdogBuilder(String[] values) throws IOException {
@@ -887,6 +915,7 @@ public class Parser
     public void clock(String[] values){
         Clock myClock = Clock.getInstance();
 
+
         if(values[1].equals("PAUSE")){
             myClock.isActive(false);
         }else if(values[1].equals("RESUME")){
@@ -896,6 +925,7 @@ public class Parser
             if(!myClock.isActive()){ //If not active
                 if(values.length == 3){ // means there is count included
                     myClock.onestep(Integer.parseInt(values[2]));
+
                 }else{
                     myClock.onestep();
                 }
@@ -910,7 +940,9 @@ public class Parser
             if(values[2].equals("FOR")){
                 myClock.waitFor(Double.parseDouble(values[3]));
 
+
             }else if(values[2].equals("UNTIL")){
+
                 myClock.waitUntil(Double.parseDouble(values[3]));
             }
         } //Option 8 and 9, option 7 at the top = Done
